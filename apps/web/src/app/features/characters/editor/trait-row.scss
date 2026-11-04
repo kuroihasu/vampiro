@@ -1,0 +1,76 @@
+:host {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.name {
+  justify-self: start;
+  text-align: left;
+}
+
+.dots {
+  display: flex;
+  gap: 0.15rem;
+}
+
+/* Cada punto es un botón de 28px (objetivo táctil) con un círculo de 14px dentro. */
+.dot {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+
+  &::before {
+    content: '';
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    border: 2px solid var(--ash);
+  }
+
+  &.filled::before {
+    background: var(--parchment);
+    border-color: var(--parchment);
+  }
+
+  &.fixed::before {
+    background: var(--ash);
+    border-color: var(--ash);
+  }
+
+  &:hover:not(:disabled)::before {
+    border-color: var(--gold);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:disabled:not(.filled)::before {
+    border-style: dotted;
+    opacity: 0.5;
+  }
+}
+
+.note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ash);
+
+  &.error {
+    color: #f08a90;
+  }
+
+  span + span::before {
+    content: ' ';
+  }
+}

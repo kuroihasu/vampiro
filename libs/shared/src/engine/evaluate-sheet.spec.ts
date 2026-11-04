@@ -39,6 +39,18 @@ describe('evaluateSheet (V20)', () => {
     expect(codes(sheet)).toContain('error:PRESUPUESTO_EXCEDIDO');
   });
 
+  it('los mensajes usan el nombre visible del grupo', () => {
+    const sheet: CharacterSheet = {
+      ...emptySheet(),
+      priorities: { attribute: { physical: 2, social: 1, mental: 0 } },
+      traits: { fuerza: 2, destreza: 2 },
+    };
+    const message = evaluateSheet(sheet, V20_RULESET).violations.find(
+      (v) => v.code === 'PRESUPUESTO_EXCEDIDO',
+    )?.message;
+    expect(message).toBe('Has repartido 4 de 3 puntos en Físicos.');
+  });
+
   it('rechaza una habilidad sobre 3 antes de gratuitos', () => {
     const sheet: CharacterSheet = { ...emptySheet(), traits: { pelea: 4 } };
     expect(codes(sheet)).toContain('error:MAX_CREACION_SUPERADO');

@@ -1,0 +1,284 @@
+<p class="back"><a routerLink="/personajes">Volver a mis fichas</a></p>
+
+@if (loadError(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+} @else if (!store.character()) {
+  <p class="muted">Cargando la ficha…</p>
+} @else {
+  <header class="head">
+    <h1>{{ store.meta().name || 'Sin nombre' }}</h1>
+    <p class="muted">
+      @if (store.character()?.status === 'complete') {
+        Ficha completa de {{ editionName() }}
+      } @else {
+        Borrador de {{ editionName() }}
+      }
+    </p>
+  </header>
+
+  <div class="editor">
+    <nav class="steps" aria-label="Pasos de la ficha">
+      <ol>
+        @for (s of steps; track s.id) {
+          <li>
+            <button
+              type="button"
+              [class.current]="step() === s.id"
+              [attr.aria-current]="step() === s.id ? 'step' : null"
+              (click)="step.set(s.id)"
+            >
+              {{ s.label }}
+            </button>
+          </li>
+        }
+      </ol>
+    </nav>
+
+    <section class="panel" aria-live="polite">
+      @switch (step()) {
+        @case ('concepto') {
+          <h2>Concepto</h2>
+          <p class="muted lead">Quién era antes del Abrazo y qué lo define ahora.</p>
+          <div class="field">
+            <label for="ed-name">Nombre</label>
+            <input
+              id="ed-name"
+              type="text"
+              [formField]="metaForm.name"
+              aria-describedby="ed-name-error"
+            />
+            <app-field-errors id="ed-name-error" [field]="metaForm.name()" />
+          </div>
+          <div class="field">
+            <label for="ed-concept">Concepto</label>
+            <input
+              id="ed-concept"
+              type="text"
+              placeholder="Periodista de sucesos, sicario arrepentido…"
+              [formField]="metaForm.concept"
+              aria-describedby="ed-concept-error"
+            />
+            <app-field-errors id="ed-concept-error" [field]="metaForm.concept()" />
+          </div>
+        }
+
+        @case ('clan') {
+          <h2>Clan</h2>
+          <p class="muted lead">
+            El clan fija tus disciplinas de clan: al crear la ficha solo puedes repartir puntos en
+            ellas.
+          </p>
+          <fieldset class="clans">
+            <legend class="visually-hidden">Elige clan</legend>
+            @for (c of store.ruleset()?.clans ?? []; track c.key) {
+              <label class="clan" [class.selected]="store.sheet().clan === c.key">
+                <input
+                  type="radio"
+                  name="clan"
+                  [value]="c.key"
+                  [checked]="store.sheet().clan === c.key"
+                  (change)="store.setClan(c.key)"
+                />
+                <span class="clan__name">{{ c.name }}</span>
+                <span class="clan__disciplines">
+                  @for (d of c.disciplines; track d; let last = $last) {
+                    {{ store.trait(d)?.name }}{{ last ? '' : ', ' }}
+                  }
+                </span>
+                <span class="clan__weakness">{{ c.weakness }}</span>
+              </label>
+            }
+          </fieldset>
+        }
+
+        @case ('atributos') {
+          <h2>Atributos</h2>
+          <p class="muted lead">
+            Ordena los tres grupos por importancia y reparte sus puntos. Todos empiezan en 1.
+          </p>
+          @for (g of attributeGroups(); track g.group) {
+            <ng-container
+              *ngTemplateOutlet="groupBlock; context: { $implicit: g, category: 'attribute' }"
+            />
+          }
+        }
+
+        @case ('habilidades') {
+          <h2>Habilidades</h2>
+          <p class="muted lead">
+            Igual que los atributos. Ninguna puede pasar de 3 antes de los gratuitos.
+          </p>
+          @for (g of abilityGroups(); track g.group) {
+            <ng-container
+              *ngTemplateOutlet="groupBlock; context: { $implicit: g, category: 'ability' }"
+            />
+          }
+        }
+
+        @case ('ventajas') {
+          <h2>Ventajas</h2>
+          <h3>Disciplinas {{ counterText('discipline') }}</h3>
+          @if (clan()) {
+            @for (k of clanDisciplines(); track k) {
+              <app-trait-row [key]="k" />
+            }
+          } @else {
+            <p class="muted">
+              Primero
+              <button type="button" class="link-button" (click)="step.set('clan')">
+                elige un clan</button
+              >.
+            </p>
+          }
+          <h3>Trasfondos {{ counterText('background') }}</h3>
+          @for (k of backgrounds(); track k) {
+            <app-trait-row [key]="k" />
+          }
+          <h3>Virtudes {{ counterText('virtue') }}</h3>
+          @for (k of virtues(); track k) {
+            <app-trait-row [key]="k" />
+          }
+        }
+
+        @case ('gratuitos') {
+          <h2>Puntos gratuitos {{ counterText('freebies') }}</h2>
+          <p class="muted lead">
+            Remata la ficha. Cada rasgo tiene su coste por punto; aquí sí puedes pasar de 3 en
+            habilidades.
+          </p>
+          <h3>Humanidad y Voluntad</h3>
+          @for (k of derivedKeys(); track k) {
+            <app-freebie-row [key]="k" />
+          }
+          <h3>Disciplinas</h3>
+          @for (k of clanDisciplines(); track k) {
+            <app-freebie-row [key]="k" />
+          } @empty {
+            <p class="muted">Elige un clan para ver sus disciplinas.</p>
+          }
+          <h3>Atributos</h3>
+          @for (k of allAttributes(); track k) {
+            <app-freebie-row [key]="k" />
+          }
+          <h3>Habilidades</h3>
+          @for (k of allAbilities(); track k) {
+            <app-freebie-row [key]="k" />
+          }
+          <h3>Trasfondos</h3>
+          @for (k of backgrounds(); track k) {
+            <app-freebie-row [key]="k" />
+          }
+          <h3>Virtudes</h3>
+          @for (k of virtues(); track k) {
+            <app-freebie-row [key]="k" />
+          }
+        }
+      }
+    </section>
+
+    <aside class="summary" aria-label="Resumen de la ficha">
+      <h2 class="visually-hidden">Resumen</h2>
+      <dl class="counters">
+        @for (c of counters(); track c.path) {
+          <div [class.over]="(c.budget?.spent ?? 0) > (c.budget?.available ?? 0)">
+            <dt>{{ c.label }}</dt>
+            <dd>{{ c.budget?.spent ?? 0 }} / {{ c.budget?.available ?? 0 }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (store.derived(); as d) {
+        <dl class="derived">
+          <div>
+            <dt><button type="button" class="trait" traitTooltip="humanidad">Humanidad</button></dt>
+            <dd>{{ d.humanity }}</dd>
+          </div>
+          <div>
+            <dt><button type="button" class="trait" traitTooltip="voluntad">Voluntad</button></dt>
+            <dd>{{ d.willpower }}</dd>
+          </div>
+          <div>
+            <dt>Generación</dt>
+            <dd>{{ d.generation }}ª</dd>
+          </div>
+          <div>
+            <dt>Sangre</dt>
+            <dd>{{ d.bloodPoolMax }} ({{ d.bloodPerTurn }}/turno)</dd>
+          </div>
+        </dl>
+      }
+
+      @if (store.errors().length) {
+        <div class="problems" role="alert">
+          <p>Hay que corregir esto antes de guardar:</p>
+          <ul>
+            @for (e of store.errors(); track e.code + e.path) {
+              <li>{{ e.message }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (store.saveError(); as message) {
+        <p class="alert" role="alert">
+          {{ message }}
+          @if (store.conflict()) {
+            <button type="button" class="link-button" (click)="loaded.reload()">
+              Recargar la ficha
+            </button>
+          }
+        </p>
+      }
+      @if (notice(); as message) {
+        <p class="notice" role="status">{{ message }}</p>
+      }
+
+      <div class="actions">
+        <button
+          type="button"
+          class="button"
+          [disabled]="store.saving() || !store.dirty() || metaForm().invalid()"
+          (click)="save()"
+        >
+          {{ store.saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        @if (store.character()?.status !== 'complete') {
+          <button
+            type="button"
+            class="button secondary"
+            [disabled]="store.saving() || metaForm().invalid()"
+            (click)="complete()"
+          >
+            Completar ficha
+          </button>
+        }
+        @if (store.dirty()) {
+          <span class="muted unsaved">Cambios sin guardar</span>
+        }
+      </div>
+    </aside>
+  </div>
+}
+
+<ng-template #groupBlock let-g let-category="category">
+  <section class="group" [attr.aria-labelledby]="'grp-' + g.group">
+    <div class="group__head">
+      <h3 [id]="'grp-' + g.group">{{ g.label }}</h3>
+      <label class="priority">
+        <span class="visually-hidden">Prioridad de {{ g.label }}</span>
+        <select (change)="setPriority(category, g.group, $event)">
+          <option value="" [selected]="g.priority === undefined" disabled>Prioridad…</option>
+          @for (points of g.points; track $index) {
+            <option [value]="$index" [selected]="g.priority === $index">
+              {{ priorityNames[$index] }} ({{ points }})
+            </option>
+          }
+        </select>
+      </label>
+      <span class="group__count">{{ counterText(g.path) }}</span>
+    </div>
+    @for (k of g.traits; track k) {
+      <app-trait-row [key]="k" />
+    }
+  </section>
+</ng-template>

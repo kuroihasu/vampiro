@@ -16,6 +16,8 @@ export interface PriorityBudget {
   category: 'attribute' | 'ability';
   /** Grupos entre los que se reparten las prioridades. */
   groups: string[];
+  /** Nombre visible de cada grupo (p. ej. physical → Físicos). */
+  groupLabels: Record<string, string>;
   /** Puntos por prioridad: primaria, secundaria, terciaria. */
   points: number[];
   /** Máximo por rasgo antes de gastar puntos gratuitos. */
@@ -26,6 +28,8 @@ export interface PriorityBudget {
 export interface FixedBudget {
   category: 'discipline' | 'background' | 'virtue';
   points: number;
+  /** Nombre visible del presupuesto (p. ej. Disciplinas). */
+  label: string;
   /** Solo disciplinas de clan al crear. */
   clanOnly?: boolean;
 }

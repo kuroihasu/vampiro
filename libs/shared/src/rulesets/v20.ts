@@ -263,18 +263,24 @@ export const V20_RULESET: Ruleset = {
   ],
   creation: {
     priorities: [
-      { category: 'attribute', groups: ['physical', 'social', 'mental'], points: [7, 5, 3] },
+      {
+        category: 'attribute',
+        groups: ['physical', 'social', 'mental'],
+        groupLabels: { physical: 'Físicos', social: 'Sociales', mental: 'Mentales' },
+        points: [7, 5, 3],
+      },
       {
         category: 'ability',
         groups: ['talents', 'skills', 'knowledges'],
+        groupLabels: { talents: 'Talentos', skills: 'Técnicas', knowledges: 'Conocimientos' },
         points: [13, 9, 5],
         maxPerTraitAtCreation: 3,
       },
     ],
     fixed: [
-      { category: 'discipline', points: 3, clanOnly: true },
-      { category: 'background', points: 5 },
-      { category: 'virtue', points: 7 },
+      { category: 'discipline', label: 'Disciplinas', points: 3, clanOnly: true },
+      { category: 'background', label: 'Trasfondos', points: 5 },
+      { category: 'virtue', label: 'Virtudes', points: 7 },
     ],
   },
   freebies: {

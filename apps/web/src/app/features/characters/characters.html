@@ -1,0 +1,84 @@
+<div class="characters">
+  <section class="mine" aria-labelledby="mine-title">
+    <h1 id="mine-title">Personajes</h1>
+
+    @if (error(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+
+    @if (list.error()) {
+      <p class="alert" role="alert">No se pudieron cargar tus fichas. Recarga la página.</p>
+    } @else if (list.isLoading() && !list.hasValue()) {
+      <p class="muted">Cargando tus fichas…</p>
+    } @else {
+      @for (g of groups(); track g.edition.id) {
+        <h2>{{ g.edition.name }}</h2>
+        <ul class="list">
+          @for (c of g.characters; track c.id) {
+            <li>
+              <div class="info">
+                <a [routerLink]="['/personajes', c.id]">{{ c.name }}</a>
+                <span class="muted">
+                  {{ c.concept || 'Sin concepto' }}
+                  @if (c.status === 'draft') {
+                    <em>(borrador)</em>
+                  }
+                </span>
+              </div>
+              @if (confirming() === c.id) {
+                <span class="confirm" role="group" [attr.aria-label]="'Borrar ' + c.name">
+                  ¿Borrar para siempre?
+                  <button type="button" class="link-button danger" (click)="remove(c.id)">
+                    Borrar
+                  </button>
+                  <button type="button" class="link-button" (click)="confirming.set(undefined)">
+                    Cancelar
+                  </button>
+                </span>
+              } @else {
+                <button
+                  type="button"
+                  class="link-button"
+                  [attr.aria-label]="'Borrar ' + c.name"
+                  (click)="confirming.set(c.id)"
+                >
+                  Borrar
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      } @empty {
+        <p class="muted">Todavía no tienes fichas. Empieza la primera con el formulario.</p>
+      }
+    }
+  </section>
+
+  <section class="new" aria-labelledby="new-title">
+    <h2 id="new-title">Nueva ficha</h2>
+    <form novalidate (submit)="onCreate($event)">
+      <div class="field">
+        <label for="new-name">Nombre del personaje</label>
+        <input
+          id="new-name"
+          type="text"
+          [formField]="createForm.name"
+          aria-describedby="new-name-error"
+        />
+        <app-field-errors id="new-name-error" [field]="createForm.name()" />
+      </div>
+      <div class="field">
+        <label for="new-edition">Edición</label>
+        <select id="new-edition" [formField]="createForm.edition">
+          @for (e of availableEditions; track e.id) {
+            <option [value]="e.id">{{ e.name }}</option>
+          }
+        </select>
+        <span class="field__hint">El resto de ediciones llegarán más adelante.</span>
+      </div>
+      <button type="submit" class="button" [disabled]="createForm().submitting()">
+        Crear ficha
+      </button>
+    </form>
+  </section>
+</div>

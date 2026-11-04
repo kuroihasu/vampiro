@@ -125,6 +125,7 @@ export function evaluateSheet(
       const priority = choice[group];
       const available = valid && priority !== undefined ? (budget.points[priority] ?? 0) : 0;
       const path = `${budget.category}.${group}`;
+      const label = budget.groupLabels[group] ?? group;
       budgets.push({ path, available, spent });
 
       if (valid && priority !== undefined) {
@@ -133,14 +134,14 @@ export function evaluateSheet(
             code: 'PRESUPUESTO_EXCEDIDO',
             severity: 'error',
             path,
-            message: `Has repartido ${spent} de ${available} puntos en ${group}.`,
+            message: `Has repartido ${spent} de ${available} puntos en ${label}.`,
           });
         } else if (spent < available) {
           violations.push({
             code: 'PUNTOS_SIN_REPARTIR',
             severity: unspentSeverity,
             path,
-            message: `Te quedan ${available - spent} puntos por repartir en ${group}.`,
+            message: `Te quedan ${available - spent} puntos por repartir en ${label}.`,
           });
         }
       }
@@ -173,14 +174,14 @@ export function evaluateSheet(
         code: 'PRESUPUESTO_EXCEDIDO',
         severity: 'error',
         path: budget.category,
-        message: `Has repartido ${spent} de ${budget.points} puntos en ${budget.category}.`,
+        message: `Has repartido ${spent} de ${budget.points} puntos en ${budget.label}.`,
       });
     } else if (spent < budget.points) {
       violations.push({
         code: 'PUNTOS_SIN_REPARTIR',
         severity: unspentSeverity,
         path: budget.category,
-        message: `Te quedan ${budget.points - spent} puntos por repartir en ${budget.category}.`,
+        message: `Te quedan ${budget.points - spent} puntos por repartir en ${budget.label}.`,
       });
     }
 
