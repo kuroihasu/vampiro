@@ -22,6 +22,7 @@ import type { AuthUser } from '../../common/auth/auth-user.js';
 import { CurrentUser } from '../../common/auth/current-user.decorator.js';
 import { Public } from '../../common/auth/public.decorator.js';
 import {
+  CharacterStateDto,
   CreateRoomDto,
   InviteCodeDto,
   JoinRoomDto,
@@ -120,6 +121,16 @@ export class RoomsController {
     @Body() dto: UpdateRoomCharacterDto,
   ): Promise<RoomCharacterInfo> {
     return this.roomCharacters.update(membership, linkId, dto);
+  }
+
+  @Patch(':id/characters/:linkId/state')
+  @UseGuards(RoomMemberGuard)
+  updateState(
+    @Membership() membership: RoomMembership,
+    @Param('linkId') linkId: string,
+    @Body() dto: CharacterStateDto,
+  ): Promise<RoomCharacterInfo> {
+    return this.roomCharacters.updateState(membership, linkId, dto);
   }
 
   @Delete(':id/characters/:linkId')

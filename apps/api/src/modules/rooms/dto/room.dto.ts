@@ -8,6 +8,7 @@ import {
   parseRoomConfig,
   ROOM_NAME_MAX_LENGTH,
   type RoomConfig,
+  type UpdateCharacterStateRequest,
   type UpdateRoomCharacterRequest,
 } from '@vampiro/shared';
 import { Transform } from 'class-transformer';
@@ -20,6 +21,7 @@ import {
   IsUUID,
   Length,
   Max,
+  MaxLength,
   Min,
   ValidateBy,
   type ValidationArguments,
@@ -83,4 +85,30 @@ export class UpdateRoomCharacterDto implements UpdateRoomCharacterRequest {
   @IsOptional()
   @IsBoolean()
   isNpc?: boolean;
+}
+
+/** Estado en partida. Los máximos de Voluntad y sangre dependen de la ficha (se comprueban en el servicio). */
+export class CharacterStateDto implements UpdateCharacterStateRequest {
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(7)
+  damage?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10)
+  willpowerSpent?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  blood?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  notes?: string;
 }

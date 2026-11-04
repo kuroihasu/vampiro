@@ -13,6 +13,7 @@ import { randomInt } from 'node:crypto';
 import { ApiException } from '../../common/api-exception.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { RoomEventsService } from '../realtime/room-events.service.js';
 import type { CreateRoomDto } from './dto/room.dto.js';
 import { onlyMaster, type RoomMembership } from './room-access.guard.js';
 import { readConfig, RoomComplianceService } from './room-compliance.service.js';
@@ -35,6 +36,7 @@ export class RoomsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly compliance: RoomComplianceService,
+    private readonly events: RoomEventsService,
   ) {}
 
   async create(userId: string, dto: CreateRoomDto): Promise<RoomDetail> {
@@ -118,6 +120,7 @@ export class RoomsService {
       data: { config: toJson(config) },
     });
     await this.compliance.recheckRoom(membership.roomId);
+    this.events.emit(membership.roomId, 'room.config.updated', config);
     return this.detail(membership);
   }
 
@@ -167,7 +170,10 @@ export class RoomsService {
       }
       throw error;
     }
-    return this.detail({ roomId: room.id, userId, role: 'player' });
+    const detail = await this.detail({ roomId: room.id, userId, role: 'player' });
+    const me = detail.members.find((m) => m.userId === userId);
+    if (me) this.events.emit(room.id, 'member.joined', me);
+    return detail;
   }
 
   /**
@@ -192,6 +198,8 @@ export class RoomsService {
         where: { roomId_userId: { roomId: actor.roomId, userId: targetUserId } },
       }),
     ]);
+    this.events.removeUser(actor.roomId, targetUserId);
+    this.events.emit(actor.roomId, 'member.left', { userId: targetUserId });
   }
 
   private async findByCode(code: string) {

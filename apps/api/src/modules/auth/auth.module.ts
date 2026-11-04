@@ -46,5 +46,7 @@ const JWT_AUDIENCE = 'vampiro-web';
     RefreshTokensService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
+  // El gateway de tiempo real verifica el mismo access token.
+  exports: [JwtModule],
 })
 export class AuthModule {}
