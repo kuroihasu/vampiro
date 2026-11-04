@@ -9,7 +9,7 @@ describe('RulesService', () => {
   });
 
   it('responde EDICION_NO_DISPONIBLE para una edición sin ruleset', () => {
-    expect(() => service.getRuleset('v5')).toThrow(ApiException);
+    expect(() => service.getRuleset('revised')).toThrow(ApiException);
   });
 
   it('busca un rasgo para los tooltips', () => {
