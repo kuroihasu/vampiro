@@ -18,6 +18,7 @@ import { ApiException, RuleViolationException } from '../../common/api-exception
 import { isUuid } from '../../common/validators.js';
 import type { Character as CharacterRow, Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { RoomComplianceService } from '../rooms/room-compliance.service.js';
 import type {
   CreateCharacterDto,
   EvaluateCharacterDto,
@@ -30,7 +31,10 @@ export interface CharacterEvaluation extends SheetEvaluation {
 
 @Injectable()
 export class CharactersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly roomCompliance: RoomComplianceService,
+  ) {}
 
   async list(ownerId: string, edition?: EditionId): Promise<CharacterSummary[]> {
     const rows = await this.prisma.character.findMany({
@@ -87,6 +91,8 @@ export class CharactersService {
         'La ficha se guardó desde otro sitio mientras la editabas. Recárgala para ver la versión actual.',
       );
     }
+    // La ficha cambió: su validez en las salas donde está también puede cambiar.
+    await this.roomCompliance.recheckCharacter(id);
     return this.get(ownerId, id);
   }
 

@@ -18,14 +18,17 @@ enum Role {
 }
 
 model User {
-  id            String         @id @default(uuid()) @db.Uuid
-  email         String         @unique
+  id            String          @id @default(uuid()) @db.Uuid
+  email         String          @unique
   passwordHash  String
   displayName   String
-  role          Role           @default(user)
-  createdAt     DateTime       @default(now())
+  role          Role            @default(user)
+  createdAt     DateTime        @default(now())
   refreshTokens RefreshToken[]
   characters    Character[]
+  masterOf      Room[]
+  memberships   RoomMember[]
+  controlled    RoomCharacter[]
 }
 
 /// Refresh token rotado. Solo se guarda el hash SHA-256 del valor que recibe el cliente.
@@ -75,6 +78,59 @@ model Character {
   sheet          Json
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  roomLinks      RoomCharacter[]
 
   @@index([ownerId, edition])
+}
+
+enum RoomRole {
+  master
+  player
+}
+
+/// Sala de partida. `config` es el RoomConfig de @vampiro/shared.
+model Room {
+  id              String          @id @default(uuid()) @db.Uuid
+  masterId        String          @db.Uuid
+  master          User            @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  name            String
+  edition         String
+  inviteCode      String          @unique
+  inviteExpiresAt DateTime?
+  config          Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  members         RoomMember[]
+  characters      RoomCharacter[]
+}
+
+model RoomMember {
+  roomId   String   @db.Uuid
+  room     Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId   String   @db.Uuid
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     RoomRole
+  joinedAt DateTime @default(now())
+
+  @@id([roomId, userId])
+  @@index([userId])
+}
+
+/// Ficha llevada a una sala. `compliant` se recalcula al vincular y al cambiar la config.
+/// `state` es el CharacterState de la partida (salud, voluntad, sangre).
+model RoomCharacter {
+  id           String    @id @default(uuid()) @db.Uuid
+  roomId       String    @db.Uuid
+  room         Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  characterId  String    @db.Uuid
+  character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  controlledBy String    @db.Uuid
+  controller   User      @relation(fields: [controlledBy], references: [id], onDelete: Cascade)
+  isNpc        Boolean   @default(false)
+  compliant    Boolean   @default(false)
+  state        Json      @default("{}")
+  createdAt    DateTime  @default(now())
+
+  @@unique([roomId, characterId])
+  @@index([characterId])
 }

@@ -6,13 +6,14 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CharactersModule } from './modules/characters/characters.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { RoomsModule } from './modules/rooms/rooms.module.js';
 import { RulesModule } from './modules/rules/rules.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { WikiModule } from './modules/wiki/wiki.module.js';
 
 /*
- * Monolito modular: auth, users, wiki (solo lectura) y characters.
- * Próximos módulos: rooms, dice, realtime.
+ * Monolito modular: auth, users, wiki (solo lectura), characters y rooms.
+ * Próximos módulos: dice, realtime.
  */
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { WikiModule } from './modules/wiki/wiki.module.js';
     UsersModule,
     WikiModule,
     CharactersModule,
+    RoomsModule,
   ],
   providers: [
     // Filtro global registrado por DI: aplica también en los tests e2e y puede inyectar servicios.
