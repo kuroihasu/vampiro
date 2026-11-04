@@ -47,14 +47,20 @@ import { EditorStore } from './editor-store';
       align-items: center;
       gap: 0.5rem;
       padding: 0.35rem 0;
-      border-bottom: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule-soft);
     }
     .name {
       justify-self: start;
       text-align: left;
     }
     .value {
+      font-size: 1.15rem;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
+    }
+    .value small {
+      font-family: var(--font-text);
+      color: var(--gold);
     }
     .value small,
     .cost {
@@ -66,11 +72,22 @@ import { EditorStore } from './editor-store';
       gap: 0.25rem;
     }
     .step {
-      width: 2rem;
-      height: 2rem;
-      border: 1px solid var(--rule);
-      background: var(--vellum);
+      width: 2.25rem;
+      height: 2.25rem;
+      border: 1px solid var(--rule-gold);
+      border-radius: 50%;
+      background: rgb(0 0 0 / 0.3);
+      color: var(--parchment);
+      font-size: 1.1rem;
+      line-height: 1;
       cursor: pointer;
+      transition:
+        background-color 0.15s,
+        border-color 0.15s;
+    }
+    .step:hover:not(:disabled) {
+      background: var(--oxblood);
+      border-color: var(--blood-bright);
     }
     .step:disabled {
       opacity: 0.4;

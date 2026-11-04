@@ -3,8 +3,12 @@
   grid-template-columns: minmax(8rem, 1fr) auto;
   align-items: center;
   gap: 0.25rem 1rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--rule);
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 .name {
@@ -30,24 +34,34 @@
 
   &::before {
     content: '';
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.9rem;
+    height: 0.9rem;
     border-radius: 50%;
-    border: 2px solid var(--ash);
+    border: 1.5px solid rgb(201 164 92 / 0.45);
+    background: rgb(0 0 0 / 0.35);
+    transition:
+      transform 0.15s var(--ease),
+      background 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
   }
 
+  /* Punto lleno: una gota de sangre con brillo */
   &.filled::before {
-    background: var(--parchment);
-    border-color: var(--parchment);
+    background: radial-gradient(circle at 35% 30%, #ff6b78, var(--blood) 55%, var(--oxblood));
+    border-color: var(--blood-bright);
+    box-shadow: 0 0 8px var(--blood-glow);
   }
 
+  /* Punto de base: ya viene dado, en pergamino apagado */
   &.fixed::before {
-    background: var(--ash);
-    border-color: var(--ash);
+    background: radial-gradient(circle at 35% 30%, var(--parchment), var(--ash));
+    border-color: var(--parchment-dim);
+    box-shadow: none;
   }
 
   &:hover:not(:disabled)::before {
-    border-color: var(--gold);
+    border-color: var(--gold-bright);
+    transform: scale(1.2);
   }
 
   &:disabled {
