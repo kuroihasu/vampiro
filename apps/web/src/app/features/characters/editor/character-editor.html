@@ -213,6 +213,31 @@
           @for (k of backgrounds(); track k) {
             <app-trait-row [key]="k" />
           }
+          @if (roads().length) {
+            <h3>Camino</h3>
+            <p class="muted">
+              El Camino sustituye a la Humanidad: su valor es la suma de sus dos virtudes.
+            </p>
+            <fieldset class="clans roads">
+              <legend class="visually-hidden">Elige Camino</legend>
+              @for (r of roads(); track r.key) {
+                <label class="clan" [class.selected]="store.sheet().road === r.key">
+                  <input
+                    type="radio"
+                    name="road"
+                    [value]="r.key"
+                    [checked]="store.sheet().road === r.key"
+                    (change)="store.setRoad(r.key)"
+                  />
+                  <span class="clan__name">{{ r.name }}</span>
+                  <span class="clan__disciplines">
+                    {{ store.trait(r.virtues[0])?.name }} y {{ store.trait(r.virtues[1])?.name }}
+                  </span>
+                  <span class="clan__weakness">{{ r.summary }}</span>
+                </label>
+              }
+            </fieldset>
+          }
           @if (virtues().length) {
             <h3>Virtudes {{ counterText('virtue') }}</h3>
             @for (k of virtues(); track k) {
@@ -304,7 +329,11 @@
       @if (store.derived(); as d) {
         <dl class="derived">
           <div>
-            <dt><button type="button" class="trait" traitTooltip="humanidad">Humanidad</button></dt>
+            <dt>
+              <button type="button" class="trait" [traitTooltip]="moralityTrait()">
+                {{ d.moralityName ?? 'Humanidad' }}
+              </button>
+            </dt>
             <dd>{{ d.humanity }}</dd>
           </div>
           <div>

@@ -55,9 +55,14 @@ export class CharacterEditor {
   protected readonly store = inject(EditorStore);
   private readonly rules = inject(RulesService);
 
-  /** Pasos según la edición: sin puntos gratuitos (V5) no hay paso de gratuitos. */
+  /** Pasos según la edición: sin gratuitos (V5) o sin méritos (Edad Oscura, de momento) se omiten. */
   protected readonly steps = computed(() =>
-    STEPS.filter((s) => s.id !== 'gratuitos' || !!this.store.ruleset()?.freebies),
+    STEPS.filter((s) => {
+      const ruleset = this.store.ruleset();
+      if (s.id === 'gratuitos') return !!ruleset?.freebies;
+      if (s.id === 'meritos') return !!ruleset?.meritsFlaws;
+      return true;
+    }),
   );
   protected readonly step = signal<(typeof STEPS)[number]['id']>('concepto');
   protected readonly priorityNames = PRIORITY_NAMES;
@@ -171,7 +176,14 @@ export class CharacterEditor {
 
   protected readonly clanDisciplines = computed(() => this.clan()?.disciplines ?? []);
   protected readonly backgrounds = computed(() => this.keysOf('background'));
-  protected readonly virtues = computed(() => this.keysOf('virtue'));
+  /** Con Caminos (Edad Oscura), solo las virtudes del Camino elegido. */
+  protected readonly virtues = computed(() =>
+    this.store.ruleset()?.roads ? this.store.usableVirtues() : this.keysOf('virtue'),
+  );
+  protected readonly roads = computed(() => this.store.ruleset()?.roads?.options ?? []);
+  protected readonly moralityTrait = computed(
+    () => this.store.ruleset()?.derived?.humanity.traitKey ?? 'humanidad',
+  );
   protected readonly derivedKeys = computed(() => this.keysOf('other'));
   protected readonly allAttributes = computed(() => this.keysOf('attribute'));
   protected readonly allAbilities = computed(() => this.keysOf('ability'));

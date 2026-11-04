@@ -1,7 +1,13 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { type Character, emptySheet, V20_RULESET, V5_RULESET } from '@vampiro/shared';
+import {
+  type Character,
+  DARK_AGES_RULESET,
+  emptySheet,
+  V20_RULESET,
+  V5_RULESET,
+} from '@vampiro/shared';
 import { errorInterceptor } from '../../../core/http/error-interceptor';
 import { EditorStore } from './editor-store';
 
@@ -239,6 +245,27 @@ describe('EditorStore', () => {
       store.setPatternChoice('skills', 'equilibrada');
       store.setTotal('pelea', 3);
       expect(store.specialtyReason('pelea', '  ')).toContain('nombre');
+    });
+  });
+
+  describe('Edad Oscura', () => {
+    beforeEach(() => store.init(character({ edition: 'dark-ages' }), DARK_AGES_RULESET));
+
+    it('las virtudes usables dependen del Camino', () => {
+      expect(store.usableVirtues()).toEqual([]);
+      store.setRoad('bestia');
+      expect(store.usableVirtues()).toEqual(['conviccion', 'instinto', 'coraje']);
+      expect(store.derived()?.moralityName).toBe('Camino de la Bestia');
+    });
+
+    it('al cambiar de Camino se quitan los puntos de virtudes que ya no se usan', () => {
+      store.setRoad('humanidad');
+      store.setTotal('conciencia', 3);
+      store.setTotal('coraje', 2);
+      store.setRoad('reyes');
+      expect(store.sheet().traits['conciencia']).toBeUndefined();
+      expect(store.sheet().traits['coraje']).toBe(1);
+      expect(store.sheet().road).toBe('reyes');
     });
   });
 });

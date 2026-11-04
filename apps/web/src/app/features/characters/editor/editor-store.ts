@@ -163,6 +163,26 @@ export class EditorStore {
     this.apply(this.withFreebie(key, delta));
   }
 
+  /** Edad Oscura: virtudes del Camino elegido más las comunes (Coraje). Vacío sin Camino. */
+  readonly usableVirtues = computed(() => {
+    const roads = this.ruleset()?.roads;
+    const road = roads?.options.find((r) => r.key === this.sheet().road);
+    return road && roads ? [...road.virtues, ...roads.sharedVirtues] : [];
+  });
+
+  /** Elige Camino y quita los puntos de las virtudes que dejan de usarse. */
+  setRoad(roadKey: string): void {
+    const roads = this.ruleset()?.roads;
+    const road = roads?.options.find((r) => r.key === roadKey);
+    if (!roads || !road) return;
+    const usable = new Set([...road.virtues, ...roads.sharedVirtues]);
+    const sheet = this.sheet();
+    const unusable = (key: string) => this.trait(key)?.category === 'virtue' && !usable.has(key);
+    const traits = Object.fromEntries(Object.entries(sheet.traits).filter(([k]) => !unusable(k)));
+    const freebies = sheet.freebies.filter((f) => !unusable(f.traitKey));
+    this.apply({ ...sheet, road: roadKey, traits, freebies });
+  }
+
   /** Distribución elegida para un presupuesto por patrón (V5). */
   setPatternChoice(key: string, optionId: string): void {
     const sheet = this.sheet();
