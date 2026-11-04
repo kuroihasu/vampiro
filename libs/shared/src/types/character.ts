@@ -34,6 +34,8 @@ export interface CharacterSheet {
   patternChoices?: Record<string, string>;
   /** Especialidades de habilidad (V5). */
   specialties?: Specialty[];
+  /** Camino elegido (Edad Oscura). */
+  road?: string;
 }
 
 export interface Character {

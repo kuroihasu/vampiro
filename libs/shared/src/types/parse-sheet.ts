@@ -14,6 +14,7 @@ const SHEET_FIELDS = new Set([
   'meritsFlaws',
   'patternChoices',
   'specialties',
+  'road',
 ]);
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
@@ -81,6 +82,13 @@ export function parseCharacterSheet(value: unknown): ParseSheetResult {
     } else if (!meritsFlaws.every((k) => typeof k === 'string' && KEY.test(k))) {
       errors.push('meritsFlaws contiene una clave inválida');
     }
+  }
+
+  if (
+    value['road'] !== undefined &&
+    (typeof value['road'] !== 'string' || !KEY.test(value['road']))
+  ) {
+    errors.push('road no es una clave válida');
   }
 
   const choices = value['patternChoices'];

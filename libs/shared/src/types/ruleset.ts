@@ -59,6 +59,21 @@ export interface SpecialtyRules {
   extra: number;
 }
 
+/** Camino (Edad Oscura): sustituye a la Humanidad y decide qué virtudes se usan. */
+export interface Road {
+  key: string;
+  name: string;
+  summary: string;
+  /** Las dos virtudes cuyo valor suma el Camino (p. ej. Convicción y Autocontrol). */
+  virtues: [string, string];
+}
+
+export interface RoadRules {
+  options: Road[];
+  /** Virtudes comunes a todos los Caminos (Coraje). */
+  sharedVirtues: string[];
+}
+
 export interface FreebieRules {
   total: number;
   /** Coste por punto según categoría. */
@@ -121,6 +136,8 @@ export interface Ruleset {
     patterns?: PatternBudget[];
   };
   specialties?: SpecialtyRules;
+  /** Edad Oscura: la moral es un Camino que la ficha elige en `road`. */
+  roads?: RoadRules;
   freebies?: FreebieRules;
   meritsFlaws?: MeritsFlawsRules;
   derived?: DerivedRules;
