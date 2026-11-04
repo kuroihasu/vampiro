@@ -35,3 +35,17 @@ export interface WikiArticle extends WikiArticleSummary {
 export function isWikiCategoryId(value: unknown): value is WikiCategoryId {
   return typeof value === 'string' && WIKI_CATEGORIES.some((c) => c.id === value);
 }
+
+/** Crear o reemplazar un artículo (solo administradores). */
+export interface WikiArticleInput {
+  slug: string;
+  title: string;
+  category: WikiCategoryId;
+  editions: EditionId[];
+  traitKey?: string;
+  bodyMarkdown: string;
+}
+
+export const WIKI_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export const WIKI_TITLE_MAX_LENGTH = 120;
+export const WIKI_BODY_MAX_LENGTH = 20_000;

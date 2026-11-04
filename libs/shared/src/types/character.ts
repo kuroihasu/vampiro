@@ -23,6 +23,8 @@ export interface CharacterSheet {
   traits: Record<string, number>;
   /** Compras con puntos gratuitos, como lista para poder deshacerlas. */
   freebies: FreebiePurchase[];
+  /** Claves de los méritos y defectos elegidos (se pagan o devuelven puntos gratuitos). */
+  meritsFlaws?: string[];
 }
 
 export interface Character {

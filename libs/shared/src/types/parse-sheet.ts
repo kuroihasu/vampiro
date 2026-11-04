@@ -6,7 +6,7 @@ export type ParseSheetResult =
 const KEY = /^[a-z0-9-]{1,40}$/;
 const MAX_ENTRIES = 300;
 const PRIORITY_CATEGORIES = ['attribute', 'ability'] as const;
-const SHEET_FIELDS = new Set(['clan', 'priorities', 'traits', 'freebies']);
+const SHEET_FIELDS = new Set(['clan', 'priorities', 'traits', 'freebies', 'meritsFlaws']);
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -64,6 +64,15 @@ export function parseCharacterSheet(value: unknown): ParseSheetResult {
           errors.push(`freebies[${i}]: campo desconocido ${key}`);
       }
     });
+  }
+
+  const meritsFlaws = value['meritsFlaws'];
+  if (meritsFlaws !== undefined) {
+    if (!Array.isArray(meritsFlaws) || meritsFlaws.length > 60) {
+      errors.push('meritsFlaws debe ser una lista (máximo 60)');
+    } else if (!meritsFlaws.every((k) => typeof k === 'string' && KEY.test(k))) {
+      errors.push('meritsFlaws contiene una clave inválida');
+    }
   }
 
   if (errors.length > 0) return { ok: false, errors };
