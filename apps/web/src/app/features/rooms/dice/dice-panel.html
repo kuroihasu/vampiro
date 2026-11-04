@@ -1,0 +1,134 @@
+<form class="panel" (submit)="roll($event)">
+  <div class="field">
+    <label for="dp-character">Quién tira</label>
+    <select id="dp-character" [value]="characterId()" (change)="characterId.set(value($event))">
+      <option value="">Tirada libre (sin personaje)</option>
+      @for (c of characters(); track c.id) {
+        <option [value]="c.id">{{ c.name }}{{ c.isNpc ? ' (NPC)' : '' }}</option>
+      }
+    </select>
+  </div>
+
+  @if (characterId()) {
+    <fieldset class="mode">
+      <legend class="visually-hidden">Cómo se forma la reserva</legend>
+      <label>
+        <input
+          type="radio"
+          name="dp-mode"
+          [checked]="mode() === 'action'"
+          (change)="mode.set('action')"
+        />
+        Acción sugerida
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="dp-mode"
+          [checked]="mode() === 'traits'"
+          (change)="mode.set('traits')"
+        />
+        Atributo + habilidad
+      </label>
+    </fieldset>
+
+    @if (mode() === 'action') {
+      <div class="field">
+        <label for="dp-action">Acción</label>
+        <select id="dp-action" [value]="actionKey()" (change)="actionKey.set(value($event))">
+          <option value="" disabled>Elige una acción…</option>
+          @for (a of actions(); track a.key) {
+            <option [value]="a.key">{{ a.label }}</option>
+          }
+        </select>
+      </div>
+    } @else {
+      <div class="pair">
+        <div class="field">
+          <label for="dp-attribute">Atributo</label>
+          <select id="dp-attribute" [value]="attribute()" (change)="attribute.set(value($event))">
+            <option value="">Ninguno</option>
+            @for (t of attributes(); track t.key) {
+              <option [value]="t.key">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="dp-ability">Habilidad</label>
+          <select id="dp-ability" [value]="ability()" (change)="ability.set(value($event))">
+            <option value="">Ninguna</option>
+            @for (t of abilities(); track t.key) {
+              <option [value]="t.key">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="field">
+      <label for="dp-dice">Dados</label>
+      <input
+        id="dp-dice"
+        type="number"
+        inputmode="numeric"
+        [value]="freeDice()"
+        (change)="freeDice.set(number($event, 1))"
+      />
+    </div>
+  }
+
+  <div class="pair">
+    <div class="field">
+      <label for="dp-modifier">Modificador</label>
+      <input
+        id="dp-modifier"
+        type="number"
+        inputmode="numeric"
+        [value]="modifier()"
+        (change)="modifier.set(number($event, 0))"
+      />
+    </div>
+    @if (usesDifficulty()) {
+      <div class="field">
+        <label for="dp-difficulty">Dificultad</label>
+        <input
+          id="dp-difficulty"
+          type="number"
+          inputmode="numeric"
+          [value]="difficulty()"
+          (change)="difficulty.set(number($event, 6))"
+        />
+      </div>
+    }
+  </div>
+
+  <div class="preview" aria-live="polite">
+    @if (preview.hasValue()) {
+      @let p = preview.value();
+      <p class="pool">
+        <span class="count">{{ p.dice }}</span>
+        {{ p.dice === 1 ? 'dado' : 'dados' }}
+        @if (p.difficulty) {
+          a dificultad {{ p.difficulty }}
+        }
+      </p>
+      <p class="breakdown muted">
+        @for (b of p.breakdown; track $index; let last = $last) {
+          {{ b.source }} {{ b.dice }}{{ last ? '' : ' + ' }}
+        }
+      </p>
+    } @else if (preview.error()) {
+      <p class="field__error">{{ preview.error()?.message }}</p>
+    } @else {
+      <p class="muted">Elige qué tirar para ver la reserva.</p>
+    }
+  </div>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <button type="submit" class="button" [disabled]="!preview.hasValue() || rolling()">
+    {{ rolling() ? 'Tirando…' : 'Tirar' }}
+  </button>
+</form>

@@ -1,0 +1,89 @@
+.rolls {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.roll {
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--rule);
+  border-left: 3px solid var(--rule);
+
+  &.success,
+  &.critical {
+    border-left-color: var(--gold);
+  }
+
+  &.botch,
+  &.bestial-failure,
+  &.messy-critical {
+    border-left-color: var(--oxblood);
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+
+  .who {
+    font-weight: 600;
+  }
+
+  time {
+    margin-left: auto;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Los dados se leen de un vistazo: los éxitos en oro, los unos en sangre. */
+.dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0.35rem;
+}
+
+.die {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--rule);
+  background: var(--ink);
+  color: var(--ash);
+  font-variant-numeric: tabular-nums;
+
+  &.hit {
+    color: var(--ink);
+    background: var(--gold);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  &.one {
+    color: var(--parchment);
+    background: var(--oxblood);
+    border-color: #b0303a;
+  }
+
+  &.hunger {
+    border-style: dashed;
+  }
+}
+
+.outcome {
+  margin: 0;
+  font-size: 0.9375rem;
+
+  .muted {
+    margin-left: 0.35rem;
+  }
+}
+
+.empty {
+  border: 0;
+  padding: 0.5rem 0;
+}

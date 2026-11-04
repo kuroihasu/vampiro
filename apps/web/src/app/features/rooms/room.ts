@@ -1,10 +1,12 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import {
+  type CharacterState,
   type CharacterSummary,
+  type DiceRollRecord,
   EDITIONS,
   type RoomCharacterInfo,
   type RoomConfig,
@@ -14,13 +16,19 @@ import { firstValueFrom } from 'rxjs';
 import { ApiError, errorMessage } from '../../core/api-error';
 import { SessionStore } from '../../core/auth/session-store';
 import { RoomsApi } from '../../core/rooms-api';
+import { type RoomEventName, RoomSocket } from '../../core/realtime/room-socket';
 import { RulesService } from '../../core/rules.service';
+import { CharacterStateView } from './dice/character-state';
+import { DicePanel } from './dice/dice-panel';
+import { RollHistory } from './dice/roll-history';
+import { RollHistoryStore } from './dice/roll-history-store';
 import { RoomConfigEditor } from './room-config-editor';
 
 /** Vista de una sala: fichas, miembros y, para el master, invitación y configuración. */
 @Component({
   selector: 'app-room',
-  imports: [RouterLink, RoomConfigEditor],
+  imports: [RouterLink, RoomConfigEditor, DicePanel, RollHistory, CharacterStateView],
+  providers: [RoomSocket, RollHistoryStore],
   templateUrl: './room.html',
   styleUrl: './room.scss',
 })
@@ -31,6 +39,8 @@ export class Room {
   private readonly rules = inject(RulesService);
   private readonly router = inject(Router);
   protected readonly session = inject(SessionStore);
+  protected readonly socket = inject(RoomSocket);
+  protected readonly history = inject(RollHistoryStore);
 
   protected readonly room = httpResource<RoomDetail>(
     () => `/api/v1/rooms/${encodeURIComponent(this.id())}`,
@@ -85,6 +95,50 @@ export class Room {
     effect(() => {
       if (this.room.hasValue()) title.setTitle(`${this.room.value().name} · Salas · Vampiro`);
     });
+    // Al abrir la sala: historial y tiempo real (una vez por sala).
+    effect(() => {
+      const id = this.id();
+      untracked(() => {
+        void this.history.load(id).catch(() => undefined);
+        this.socket.connect(id, {
+          onEvent: (event, payload) => this.onRoomEvent(event, payload),
+          onResync: () => {
+            void this.history.resync().catch(() => undefined);
+            this.room.reload();
+          },
+        });
+      });
+    });
+  }
+
+  protected canEditState(c: RoomCharacterInfo): boolean {
+    return this.isMaster() || c.controlledBy === this.session.user()?.id;
+  }
+
+  protected rolled(roll: DiceRollRecord): void {
+    this.history.add(roll);
+  }
+
+  protected updateState(c: RoomCharacterInfo, change: Partial<CharacterState>): Promise<void> {
+    return this.run(async () => {
+      await firstValueFrom(this.api.updateState(this.id(), c.id, change));
+    });
+  }
+
+  /** Las tiradas se añaden al historial; el resto de cambios recargan la sala. */
+  private onRoomEvent(event: RoomEventName, payload: unknown): void {
+    if (event === 'roll.created') {
+      this.history.add(payload as DiceRollRecord);
+      return;
+    }
+    if (
+      event === 'member.left' &&
+      (payload as { userId: string }).userId === this.session.user()?.id
+    ) {
+      void this.router.navigateByUrl('/salas');
+      return;
+    }
+    this.room.reload();
   }
 
   protected canRemove(c: RoomCharacterInfo): boolean {

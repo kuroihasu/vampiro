@@ -1,0 +1,68 @@
+.state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.health {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Casillas de salud: vacías = sano, en sangre = herida. */
+.box {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid var(--ash);
+  background: transparent;
+  cursor: pointer;
+
+  &.hurt {
+    background: var(--oxblood);
+    border-color: #b0303a;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.caption {
+  margin-left: 0.4rem;
+  color: var(--ash);
+  font-style: italic;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  .name {
+    color: var(--ash);
+  }
+
+  .value {
+    font-variant-numeric: tabular-nums;
+    min-width: 3.5rem;
+    text-align: center;
+  }
+}
+
+.step {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--rule);
+  background: var(--vellum);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
