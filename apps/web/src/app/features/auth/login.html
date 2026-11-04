@@ -1,0 +1,42 @@
+<section class="auth">
+  <h1>Entrar</h1>
+  <p class="muted">Con tu cuenta guardas tus fichas y entras en las salas de tu grupo.</p>
+
+  @if (serverError(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <form novalidate (submit)="onSubmit($event)">
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input
+        id="login-email"
+        type="email"
+        autocomplete="email"
+        [formField]="loginForm.email"
+        [attr.aria-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
+        aria-describedby="login-email-error"
+      />
+      <app-field-errors id="login-email-error" [field]="loginForm.email()" />
+    </div>
+
+    <div class="field">
+      <label for="login-password">Contraseña</label>
+      <input
+        id="login-password"
+        type="password"
+        autocomplete="current-password"
+        [formField]="loginForm.password"
+        [attr.aria-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
+        aria-describedby="login-password-error"
+      />
+      <app-field-errors id="login-password-error" [field]="loginForm.password()" />
+    </div>
+
+    <button type="submit" class="button" [disabled]="loginForm().submitting()">
+      {{ loginForm().submitting() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+
+  <p class="switch">¿Aún no tienes cuenta? <a routerLink="/registro">Crea una</a>.</p>
+</section>

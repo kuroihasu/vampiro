@@ -1,22 +1,255 @@
+/*
+ * Estética de grimorio: tinta marrón, pergamino, sangre seca y oro deslustrado.
+ * Una sola nota audaz (el nombre en blackletter); el resto es una serif de lectura.
+ */
 :root {
-  --color-bg: #0f0b0c;
-  --color-surface: #1b1416;
-  --color-text: #eee5e6;
-  --color-muted: #a8999b;
-  --color-accent: #9e1b2b;
+  --ink: #17100f;
+  --vellum: #221816;
+  --rule: #3a2a26;
+  --parchment: #e9dfd0;
+  --ash: #a8998c;
+  --oxblood: #8c1c24;
+  --gold: #c9a45c;
+
+  --font-text: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-blackletter: 'UnifrakturMaguntia', var(--font-text);
+
+  color-scheme: dark;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
+  min-height: 100vh;
+  font-family: var(--font-text);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  background: var(--ink);
+  color: var(--parchment);
+  font-optical-sizing: auto;
 }
 
 a {
+  color: var(--gold);
+  text-underline-offset: 0.2em;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 1.5em 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  font-weight: 500;
+  margin-top: 0;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+button,
+input,
+select {
+  font: inherit;
   color: inherit;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  color: var(--ash);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--parchment);
+  }
+}
+
+/* Texto largo de la wiki */
+.prose {
+  display: block;
+  max-width: 68ch;
+  line-height: 1.7;
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 1em;
+  }
+
+  li > p {
+    margin: 0 0 0.25em;
+  }
+
+  blockquote {
+    margin: 1.5em 0;
+    padding-left: 1.25rem;
+    border-left: 3px solid var(--oxblood);
+    font-style: italic;
+    color: var(--ash);
+  }
+
+  code {
+    font-size: 0.9em;
+    background: var(--vellum);
+    padding: 0.1em 0.3em;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 2em 0;
+  }
+}
+
+/* Mención de un rasgo: abre el tooltip. Parece texto con subrayado punteado. */
+.trait {
+  font: inherit;
+  color: var(--parchment);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: help;
+  text-decoration: underline dotted var(--gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+
+  &:hover,
+  &[aria-describedby] {
+    color: var(--gold);
+  }
+}
+
+/* Panel del tooltip (se añade a <body>, por eso vive en estilos globales). */
+.trait-tooltip {
+  position: fixed;
+  z-index: 100;
+  width: min(22rem, calc(100vw - 1rem));
+  padding: 0.875rem 1rem 0.75rem;
+  background: var(--vellum);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--gold);
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.5);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.trait-tooltip__name {
+  font-weight: 600;
+  font-size: 1.0625rem;
+}
+
+.trait-tooltip__levels {
+  margin: 0.5rem 0 0;
+  padding-left: 1.4rem;
+  color: var(--ash);
+
+  li::marker {
+    color: var(--gold);
+  }
+}
+
+/* Formularios */
+.field {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+
+  label {
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--vellum);
+    border: 1px solid var(--rule);
+    border-bottom: 2px solid var(--ash);
+
+    &:focus-visible {
+      outline-offset: 0;
+      border-bottom-color: var(--gold);
+    }
+
+    &[aria-invalid='true'] {
+      border-bottom-color: #e0626a;
+    }
+  }
+}
+
+.field__hint {
+  color: var(--ash);
+  font-size: 0.9375rem;
+}
+
+.field__error {
+  color: #f08a90;
+  font-size: 0.9375rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.65rem 1.4rem;
+  background: var(--oxblood);
+  color: var(--parchment);
+  border: 1px solid #b0303a;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:hover {
+    background: #a3222c;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-left: 3px solid #e0626a;
+  background: rgb(140 28 36 / 0.25);
+  margin-bottom: 1.25rem;
+}
+
+.muted {
+  color: var(--ash);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

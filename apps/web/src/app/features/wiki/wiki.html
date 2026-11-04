@@ -1,0 +1,74 @@
+<div class="wiki">
+  <aside class="index">
+    <h1>Wiki</h1>
+    <p class="muted intro">
+      Clanes, disciplinas, rasgos y reglas, explicados con palabras propias.
+    </p>
+
+    <form role="search" class="search" (submit)="search($event)">
+      <label for="wiki-q">Buscar en la wiki</label>
+      <div class="search__row">
+        <input id="wiki-q" type="search" [formField]="searchForm.q" />
+        <button type="submit" class="button">Buscar</button>
+      </div>
+    </form>
+
+    <nav aria-label="Categorías de la wiki">
+      <ul class="categories">
+        <li>
+          <a
+            routerLink="/wiki"
+            [queryParams]="{ q: q() || null }"
+            [class.active]="!category()"
+            [attr.aria-current]="!category() ? 'page' : null"
+            >Todas</a
+          >
+        </li>
+        @if (categories.hasValue()) {
+          @for (c of categories.value(); track c.id) {
+            <li>
+              <a
+                routerLink="/wiki"
+                [queryParams]="{ categoria: c.id, q: q() || null }"
+                [class.active]="category()?.id === c.id"
+                [attr.aria-current]="category()?.id === c.id ? 'page' : null"
+              >
+                {{ c.name }} <span class="count">{{ c.count }}</span>
+              </a>
+            </li>
+          }
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <section class="results" aria-labelledby="wiki-results-title" aria-live="polite">
+    <h2 id="wiki-results-title">{{ heading() }}</h2>
+
+    @if (errorText(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    } @else if (articles.isLoading() && !articles.hasValue()) {
+      <p class="muted">Cargando artículos…</p>
+    } @else if (articles.hasValue()) {
+      @if (articles.value().length === 0) {
+        <p class="muted">
+          No hay artículos que coincidan.
+          @if (q()) {
+            <a routerLink="/wiki" [queryParams]="{ categoria: category()?.id ?? null }"
+              >Quitar la búsqueda</a
+            >.
+          }
+        </p>
+      } @else {
+        <ul class="articles">
+          @for (a of articles.value(); track a.slug) {
+            <li>
+              <a [routerLink]="['/wiki', a.slug]">{{ a.title }}</a>
+              <span class="muted">{{ a.editions.join(', ').toUpperCase() }}</span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+</div>

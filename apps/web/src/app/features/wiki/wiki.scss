@@ -1,0 +1,111 @@
+.wiki {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  gap: 2rem clamp(2rem, 5vw, 5rem);
+  align-items: start;
+
+  @media (max-width: 48rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.intro {
+  margin: 0 0 1.5rem;
+}
+
+.search {
+  margin-bottom: 2rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.search__row {
+  display: flex;
+  gap: 0.5rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    background: var(--vellum);
+    border: 1px solid var(--rule);
+    border-bottom: 2px solid var(--ash);
+  }
+
+  .button {
+    padding-inline: 1rem;
+  }
+}
+
+/* Índice de grimorio: la categoría activa se marca con un filete de sangre. */
+.categories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--rule);
+
+  a {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0 0.4rem 1rem;
+    margin-left: -1px;
+    border-left: 3px solid transparent;
+    color: var(--ash);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--parchment);
+    }
+
+    &.active {
+      color: var(--parchment);
+      border-left-color: var(--oxblood);
+    }
+  }
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  color: var(--ash);
+}
+
+.results h2 {
+  margin-top: 0;
+  font-weight: 500;
+}
+
+.articles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 40rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  a {
+    font-size: 1.1875rem;
+    color: var(--parchment);
+    text-decoration-color: var(--rule);
+
+    &:hover {
+      text-decoration-color: var(--gold);
+    }
+  }
+
+  .muted {
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+  }
+}

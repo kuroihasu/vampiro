@@ -6,7 +6,14 @@ import type { Ruleset } from '../types/ruleset.js';
  * Los números de creación siguen el manual de V20 y deben revisarse al completar el catálogo.
  */
 
-const attr = (key: string, name: string, group: string, summary: string): TraitDefinition => ({
+const attr = (
+  key: string,
+  name: string,
+  group: string,
+  summary: string,
+  levels?: string[],
+): TraitDefinition => ({
+  ...(levels ? { levels } : {}),
   key,
   name,
   category: 'attribute',
@@ -16,7 +23,14 @@ const attr = (key: string, name: string, group: string, summary: string): TraitD
   max: 5,
 });
 
-const ability = (key: string, name: string, group: string, summary: string): TraitDefinition => ({
+const ability = (
+  key: string,
+  name: string,
+  group: string,
+  summary: string,
+  levels?: string[],
+): TraitDefinition => ({
+  ...(levels ? { levels } : {}),
   key,
   name,
   category: 'ability',
@@ -26,7 +40,13 @@ const ability = (key: string, name: string, group: string, summary: string): Tra
   max: 5,
 });
 
-const discipline = (key: string, name: string, summary: string): TraitDefinition => ({
+const discipline = (
+  key: string,
+  name: string,
+  summary: string,
+  levels?: string[],
+): TraitDefinition => ({
+  ...(levels ? { levels } : {}),
   key,
   name,
   category: 'discipline',
@@ -58,8 +78,20 @@ export const V20_RULESET: Ruleset = {
   version: '2026.11.0',
   catalog: [
     // Atributos
-    attr('fuerza', 'Fuerza', 'physical', 'Potencia física bruta: cargar, golpear, romper.'),
-    attr('destreza', 'Destreza', 'physical', 'Agilidad, coordinación y rapidez de manos.'),
+    attr('fuerza', 'Fuerza', 'physical', 'Potencia física bruta: cargar, golpear, romper.', [
+      'Débil: te cuesta levantar algo pesado.',
+      'Normal: la media de un adulto.',
+      'Buena: entrenas o trabajas con el cuerpo.',
+      'Excepcional: levantas lo que dos personas juntas.',
+      'Extraordinaria: el límite de lo humano.',
+    ]),
+    attr('destreza', 'Destreza', 'physical', 'Agilidad, coordinación y rapidez de manos.', [
+      'Torpe: se te caen las cosas.',
+      'Normal: te defiendes sin destacar.',
+      'Buena: ágil y de reflejos rápidos.',
+      'Excepcional: acróbata o ladrón hábil.',
+      'Extraordinaria: cada gesto es preciso.',
+    ]),
     attr('resistencia', 'Resistencia', 'physical', 'Aguante físico y capacidad de soportar daño.'),
     attr('carisma', 'Carisma', 'social', 'Capacidad de atraer y caer bien a los demás.'),
     attr('manipulacion', 'Manipulación', 'social', 'Habilidad para influir en otros a tu favor.'),
@@ -72,7 +104,13 @@ export const V20_RULESET: Ruleset = {
     ability('alerta', 'Alerta', 'talents', 'Notar peligros y cambios a tu alrededor.'),
     ability('atletismo', 'Atletismo', 'talents', 'Correr, saltar, trepar y nadar.'),
     ability('consciencia', 'Consciencia', 'talents', 'Sentir lo sobrenatural.'),
-    ability('pelea', 'Pelea', 'talents', 'Combate sin armas.'),
+    ability('pelea', 'Pelea', 'talents', 'Combate sin armas.', [
+      'Novato: sabes dar un puñetazo.',
+      'Practicante: peleas de bar y algo de técnica.',
+      'Competente: entrenamiento serio en un estilo.',
+      'Experto: pocos te igualan cuerpo a cuerpo.',
+      'Maestro: tu estilo es referencia.',
+    ]),
     ability('empatia', 'Empatía', 'talents', 'Entender las emociones de otros.'),
     ability(
       'expresion',
@@ -122,12 +160,24 @@ export const V20_RULESET: Ruleset = {
     // Disciplinas
     discipline('animalismo', 'Animalismo', 'Comunión y dominio sobre las bestias.'),
     discipline('auspex', 'Auspex', 'Sentidos sobrenaturales y percepción extrasensorial.'),
-    discipline('celeridad', 'Celeridad', 'Velocidad sobrehumana.'),
+    discipline('celeridad', 'Celeridad', 'Velocidad sobrehumana.', [
+      'Reflejos por encima de cualquier mortal.',
+      'Te mueves como un borrón en la penumbra.',
+      'Puedes encadenar varias acciones en un instante.',
+      'El mundo parece ir a cámara lenta.',
+      'Velocidad que desafía al ojo y a la física.',
+    ]),
     discipline('demencia', 'Demencia', 'Contagiar la locura a otras mentes.'),
     discipline('dominacion', 'Dominación', 'Imponer la voluntad mediante la mirada y la voz.'),
     discipline('fortaleza', 'Fortaleza', 'Resistencia sobrenatural al daño.'),
     discipline('ofuscacion', 'Ofuscación', 'Pasar desapercibido o volverse invisible.'),
-    discipline('potencia', 'Potencia', 'Fuerza sobrehumana.'),
+    discipline('potencia', 'Potencia', 'Fuerza sobrehumana.', [
+      'Golpeas más fuerte de lo que parece posible.',
+      'Doblas metal con las manos.',
+      'Atraviesas paredes de ladrillo.',
+      'Levantas un coche.',
+      'Fuerza digna de un mito.',
+    ]),
     discipline('presencia', 'Presencia', 'Atraer, intimidar o fascinar emocionalmente.'),
     discipline('protean', 'Protean', 'Transformar el propio cuerpo.'),
     discipline('taumaturgia', 'Taumaturgia', 'Magia de sangre.'),
