@@ -46,6 +46,12 @@ export class DicePoolDto implements RoomDicePoolRequest {
   @Min(1)
   @Max(MAX_DICE)
   dice?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  hunger?: number;
 }
 
 export class RollDto extends DicePoolDto implements RollRequest {

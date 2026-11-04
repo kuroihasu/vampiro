@@ -131,8 +131,12 @@ export class DiceService {
     const unknown = traits.filter((k) => !findTrait(ruleset, k));
     if (unknown.length) throw invalid(`Rasgos desconocidos: ${unknown.join(', ')}.`);
 
+    // V5: los dados de Hambre salen del estado del personaje en la sala (1 si aún no hay).
+    const state = (link.state ?? {}) as { hunger?: number };
+    const hunger = usesHunger(ruleset) ? (state.hunger ?? 1) : undefined;
     const pool = calculateDicePool(sheet.sheet, ruleset, {
       traits,
+      ...(hunger !== undefined ? { hunger } : {}),
       ...(dto.modifier !== undefined ? { modifier: dto.modifier } : {}),
       ...(dto.difficulty !== undefined ? { difficulty: dto.difficulty } : {}),
     });
@@ -163,12 +167,22 @@ export class DiceService {
             Math.max(ruleset.dice.minDifficulty, dto.difficulty ?? 6),
           )
         : undefined;
+    const hungerDice = usesHunger(ruleset) ? Math.min(dice, dto.hunger ?? 0) : undefined;
     return {
-      pool: { dice, breakdown, ...(difficulty !== undefined ? { difficulty } : {}) },
+      pool: {
+        dice,
+        breakdown,
+        ...(difficulty !== undefined ? { difficulty } : {}),
+        ...(hungerDice !== undefined ? { hungerDice } : {}),
+      },
       ruleset,
       label: `Tirada libre de ${dice} ${dice === 1 ? 'dado' : 'dados'}`,
     };
   }
+}
+
+function usesHunger(ruleset: Ruleset): boolean {
+  return ruleset.dice.kind === 'success-threshold' && ruleset.dice.hungerDice;
 }
 
 function rollD10(count: number): number[] {

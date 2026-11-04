@@ -57,7 +57,7 @@ describe('Characters (e2e)', () => {
     });
 
     it('rechaza una edición sin ruleset (EDICION_NO_DISPONIBLE)', async () => {
-      const res = await create(nadia, { edition: 'v5', name: 'X' }).expect(422);
+      const res = await create(nadia, { edition: 'revised', name: 'X' }).expect(422);
       expect(res.body.code).toBe('EDICION_NO_DISPONIBLE');
     });
 

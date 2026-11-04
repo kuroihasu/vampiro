@@ -75,7 +75,7 @@ describe('Rooms (e2e)', () => {
     });
 
     it('rechaza una edición sin reglas y una configuración inválida', async () => {
-      const v5 = await createRoom(master, { name: 'X', edition: 'v5' }).expect(422);
+      const v5 = await createRoom(master, { name: 'X', edition: 'revised' }).expect(422);
       expect(v5.body.code).toBe('EDICION_NO_DISPONIBLE');
       const bad = await createRoom(master, {
         name: 'X',

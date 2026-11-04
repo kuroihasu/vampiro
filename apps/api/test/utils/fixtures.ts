@@ -47,6 +47,49 @@ export const COMPLETE_V20_SHEET: CharacterSheet = {
   freebies: [{ traitKey: 'voluntad', dots: 2 }],
 };
 
+/** Ficha V5 completa y válida (Brujah, distribución equilibrada). */
+export const COMPLETE_V5_SHEET: CharacterSheet = {
+  clan: 'brujah',
+  priorities: {},
+  patternChoices: { skills: 'equilibrada' },
+  traits: {
+    fuerza: 4,
+    destreza: 3,
+    resistencia: 3,
+    carisma: 3,
+    manipulacion: 2,
+    compostura: 2,
+    inteligencia: 2,
+    astucia: 2,
+    resolucion: 1,
+    pelea: 3,
+    atletismo: 3,
+    intimidacion: 3,
+    callejeo: 2,
+    sigilo: 2,
+    conducir: 2,
+    persuasion: 2,
+    perspicacia: 2,
+    academicismo: 1,
+    ocultismo: 1,
+    investigacion: 1,
+    'armas-fuego': 1,
+    etiqueta: 1,
+    subterfugio: 1,
+    tecnologia: 1,
+    potencia: 2,
+    presencia: 1,
+    contactos: 3,
+    recursos: 2,
+  },
+  freebies: [],
+  meritsFlaws: ['belleza', 'presa-exclusiva'],
+  specialties: [
+    { skill: 'academicismo', name: 'Historia del arte' },
+    { skill: 'pelea', name: 'Placajes' },
+  ],
+};
+
 /** Registra un usuario y devuelve su cabecera Authorization. */
 export async function registerUser(server: App, email: string): Promise<{ Authorization: string }> {
   const res = await request(server)

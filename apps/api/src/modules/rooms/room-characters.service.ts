@@ -119,6 +119,12 @@ export class RoomCharactersService {
     if (derived && dto.willpowerSpent !== undefined && dto.willpowerSpent > derived.willpower) {
       errors.push(`willpowerSpent no puede pasar de ${derived.willpower}`);
     }
+    if (dto.hunger !== undefined && derived?.hungerMax === undefined) {
+      errors.push('esta edición no usa Hambre');
+    }
+    if (dto.blood !== undefined && derived && derived.hungerMax !== undefined) {
+      errors.push('esta edición usa Hambre en vez de reserva de sangre');
+    }
     if (derived && dto.blood !== undefined && dto.blood > derived.bloodPoolMax) {
       errors.push(`blood no puede pasar de ${derived.bloodPoolMax}`);
     }
@@ -128,6 +134,7 @@ export class RoomCharactersService {
       ...(dto.damage !== undefined ? { damage: dto.damage } : {}),
       ...(dto.willpowerSpent !== undefined ? { willpowerSpent: dto.willpowerSpent } : {}),
       ...(dto.blood !== undefined ? { blood: dto.blood } : {}),
+      ...(dto.hunger !== undefined ? { hunger: dto.hunger } : {}),
       ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
     };
     const state: Partial<CharacterState> = {
