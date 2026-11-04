@@ -1,6 +1,7 @@
 import type { RollResult } from '../engine/resolve-roll.js';
 import type { DicePool } from './dice.js';
-import type { CharacterState, RoomCharacterInfo, RoomConfig, RoomMemberInfo } from './room.js';
+import type { RoomConfig } from './room-config.js';
+import type { CharacterState, RoomCharacterInfo, RoomMemberInfo } from './room.js';
 
 /** Una tirada guardada. Es inmutable: no se edita ni se borra. */
 export interface DiceRollRecord {
