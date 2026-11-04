@@ -163,6 +163,33 @@ export class EditorStore {
     this.apply(this.withFreebie(key, delta));
   }
 
+  /** Distribución elegida para un presupuesto por patrón (V5). */
+  setPatternChoice(key: string, optionId: string): void {
+    const sheet = this.sheet();
+    this.apply({ ...sheet, patternChoices: { ...(sheet.patternChoices ?? {}), [key]: optionId } });
+  }
+
+  specialtyReason(skill: string, name: string): string | undefined {
+    if (name.trim().length === 0) return 'Escribe el nombre de la especialidad.';
+    if (name.trim().length > 40) return 'Como mucho 40 caracteres.';
+    return this.reasonFor(
+      this.withSpecialties([...(this.sheet().specialties ?? []), { skill, name: name.trim() }]),
+    );
+  }
+
+  addSpecialty(skill: string, name: string): void {
+    if (this.specialtyReason(skill, name)) return;
+    this.apply(
+      this.withSpecialties([...(this.sheet().specialties ?? []), { skill, name: name.trim() }]),
+    );
+  }
+
+  removeSpecialty(index: number): void {
+    this.apply(
+      this.withSpecialties((this.sheet().specialties ?? []).filter((_, i) => i !== index)),
+    );
+  }
+
   hasMeritFlaw(key: string): boolean {
     return this.sheet().meritsFlaws?.includes(key) ?? false;
   }
@@ -242,6 +269,10 @@ export class EditorStore {
     if (dots > 0) traits[key] = dots;
     else delete traits[key];
     return { ...sheet, traits };
+  }
+
+  private withSpecialties(specialties: { skill: string; name: string }[]): CharacterSheet {
+    return { ...this.sheet(), specialties };
   }
 
   private withMeritFlaw(key: string): CharacterSheet {

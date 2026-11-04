@@ -1,7 +1,7 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { type Character, emptySheet, V20_RULESET } from '@vampiro/shared';
+import { type Character, emptySheet, V20_RULESET, V5_RULESET } from '@vampiro/shared';
 import { errorInterceptor } from '../../../core/http/error-interceptor';
 import { EditorStore } from './editor-store';
 
@@ -203,6 +203,42 @@ describe('EditorStore', () => {
       await saved;
       expect(store.conflict()).toBe(true);
       expect(store.saveError()).toContain('otro sitio');
+    });
+  });
+
+  describe('V5', () => {
+    beforeEach(() => store.init(character({ edition: 'v5' }), V5_RULESET));
+
+    it('los atributos empiezan en 0 y siguen el patrón 4/3/3/3/2/2/2/2/1', () => {
+      expect(store.total('fuerza')).toBe(0);
+      store.setTotal('fuerza', 4);
+      expect(store.blockedReason('destreza', 4)).toContain('4');
+      expect(store.blockedReason('destreza', 3)).toBeUndefined();
+      expect(store.budget('attributes')).toMatchObject({ available: 22, spent: 4 });
+    });
+
+    it('elegir la distribución de habilidades cambia lo permitido', () => {
+      store.setPatternChoice('skills', 'especialista');
+      expect(store.blockedReason('pelea', 4)).toBeUndefined();
+      store.setPatternChoice('skills', 'equilibrada');
+      expect(store.blockedReason('pelea', 4)).toContain('4');
+    });
+
+    it('añade y quita especialidades; exige puntos en la habilidad', () => {
+      expect(store.specialtyReason('pelea', 'Placajes')).toContain('Pelea');
+      store.setPatternChoice('skills', 'equilibrada');
+      store.setTotal('pelea', 3);
+      expect(store.specialtyReason('pelea', 'Placajes')).toBeUndefined();
+      store.addSpecialty('pelea', 'Placajes');
+      expect(store.sheet().specialties).toEqual([{ skill: 'pelea', name: 'Placajes' }]);
+      store.removeSpecialty(0);
+      expect(store.sheet().specialties).toEqual([]);
+    });
+
+    it('una especialidad necesita nombre', () => {
+      store.setPatternChoice('skills', 'equilibrada');
+      store.setTotal('pelea', 3);
+      expect(store.specialtyReason('pelea', '  ')).toContain('nombre');
     });
   });
 });

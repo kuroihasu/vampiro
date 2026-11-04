@@ -37,6 +37,7 @@ export class DicePanel {
   protected readonly modifier = signal(0);
   protected readonly difficulty = signal(6);
   protected readonly freeDice = signal(5);
+  protected readonly hunger = signal(1);
   protected readonly maxDice = MAX_DICE;
 
   protected readonly rolling = signal(false);
@@ -57,6 +58,11 @@ export class DicePanel {
     this.ruleset().catalog.filter((t) => t.category === 'ability'),
   );
   protected readonly usesDifficulty = computed(() => this.ruleset().dice.kind === 'difficulty');
+  /** V5: las tiradas llevan dados de Hambre (con personaje, los de su estado en la sala). */
+  protected readonly usesHunger = computed(() => {
+    const dice = this.ruleset().dice;
+    return dice.kind === 'success-threshold' && dice.hungerDice;
+  });
 
   /** Petición actual, o undefined si falta algo para calcular la reserva. */
   protected readonly request = computed<RollRequest | undefined>(() => {
@@ -67,7 +73,8 @@ export class DicePanel {
     const characterId = this.characterId();
     if (!characterId) {
       const dice = this.freeDice();
-      return dice >= 1 && dice <= MAX_DICE ? { ...base, dice } : undefined;
+      const hunger = this.usesHunger() ? { hunger: this.hunger() } : {};
+      return dice >= 1 && dice <= MAX_DICE ? { ...base, ...hunger, dice } : undefined;
     }
     if (this.mode() === 'action') {
       return this.actionKey()

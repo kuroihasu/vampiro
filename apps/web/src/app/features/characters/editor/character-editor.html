@@ -19,7 +19,7 @@
   <div class="editor">
     <nav class="steps" aria-label="Pasos de la ficha">
       <ol>
-        @for (s of steps; track s.id) {
+        @for (s of steps(); track s.id) {
           <li>
             <button
               type="button"
@@ -93,9 +93,18 @@
 
         @case ('atributos') {
           <h2>Atributos</h2>
-          <p class="muted lead">
-            Ordena los tres grupos por importancia y reparte sus puntos. Todos empiezan en 1.
-          </p>
+          @if (attributePattern(); as p) {
+            <p class="muted lead">
+              Reparte {{ p.options[0]?.label }}: un atributo a 4, tres a 3, cuatro a 2 y uno a 1.
+            </p>
+            <p class="pattern-status" [class.error]="store.violationsFor(p.key).length > 0">
+              {{ counterText(p.key) }} {{ budgetMessage(p.key) }}
+            </p>
+          } @else {
+            <p class="muted lead">
+              Ordena los tres grupos por importancia y reparte sus puntos. Todos empiezan en 1.
+            </p>
+          }
           @for (g of attributeGroups(); track g.group) {
             <ng-container
               *ngTemplateOutlet="groupBlock; context: { $implicit: g, category: 'attribute' }"
@@ -105,19 +114,89 @@
 
         @case ('habilidades') {
           <h2>Habilidades</h2>
-          <p class="muted lead">
-            Igual que los atributos. Ninguna puede pasar de 3 antes de los gratuitos.
-          </p>
+          @if (skillPattern(); as p) {
+            <div class="field pattern-choice">
+              <label for="ed-skill-pattern">Distribución</label>
+              <select id="ed-skill-pattern" (change)="setPatternChoice(p.key, $event)">
+                <option value="" disabled [selected]="!store.sheet().patternChoices?.[p.key]">
+                  Elige cómo repartir…
+                </option>
+                @for (o of p.options; track o.id) {
+                  <option
+                    [value]="o.id"
+                    [selected]="store.sheet().patternChoices?.[p.key] === o.id"
+                  >
+                    {{ o.label }}
+                  </option>
+                }
+              </select>
+            </div>
+            <p class="pattern-status" [class.error]="store.violationsFor(p.key).length > 0">
+              {{ counterText(p.key) }} {{ budgetMessage(p.key) }}
+            </p>
+          } @else {
+            <p class="muted lead">
+              Igual que los atributos. Ninguna puede pasar de 3 antes de los gratuitos.
+            </p>
+          }
           @for (g of abilityGroups(); track g.group) {
             <ng-container
               *ngTemplateOutlet="groupBlock; context: { $implicit: g, category: 'ability' }"
             />
           }
+          @if (store.ruleset()?.specialties) {
+            <section class="specialties" aria-labelledby="spec-title">
+              <h3 id="spec-title">Especialidades {{ counterText('specialties') }}</h3>
+              <p class="muted">{{ budgetMessage('specialties') }}</p>
+              <ul>
+                @for (sp of store.sheet().specialties ?? []; track $index) {
+                  <li>
+                    {{ store.trait(sp.skill)?.name }}: {{ sp.name }}
+                    <button
+                      type="button"
+                      class="link-button"
+                      (click)="store.removeSpecialty($index)"
+                    >
+                      Quitar
+                    </button>
+                  </li>
+                }
+              </ul>
+              <form class="spec-form" (submit)="addSpecialty($event)">
+                <label class="visually-hidden" for="spec-skill">Habilidad</label>
+                <select id="spec-skill" (change)="specialtySkill.set(inputValue($event))">
+                  <option value="" [selected]="!specialtySkill()">Habilidad…</option>
+                  @for (k of skillsWithDots(); track k) {
+                    <option [value]="k">{{ store.trait(k)?.name }}</option>
+                  }
+                </select>
+                <label class="visually-hidden" for="spec-name">Especialidad</label>
+                <input
+                  id="spec-name"
+                  type="text"
+                  placeholder="Por ejemplo, Historia del arte"
+                  [value]="specialtyName()"
+                  (input)="specialtyName.set(inputValue($event))"
+                />
+                <button type="submit" class="button secondary" [disabled]="!!specialtyBlocked()">
+                  Añadir
+                </button>
+              </form>
+              @if (specialtySkill() && specialtyName().trim() && specialtyBlocked(); as why) {
+                <p class="field__error">{{ why }}</p>
+              }
+            </section>
+          }
         }
 
         @case ('ventajas') {
           <h2>Ventajas</h2>
-          <h3>Disciplinas {{ counterText('discipline') }}</h3>
+          <h3>Disciplinas {{ counterText(disciplinePattern()?.key ?? 'discipline') }}</h3>
+          @if (disciplinePattern(); as p) {
+            <p class="pattern-status" [class.error]="store.violationsFor(p.key).length > 0">
+              {{ budgetMessage(p.key) ?? 'Una disciplina de clan a 2 y otra a 1.' }}
+            </p>
+          }
           @if (clan()) {
             @for (k of clanDisciplines(); track k) {
               <app-trait-row [key]="k" />
@@ -134,18 +213,27 @@
           @for (k of backgrounds(); track k) {
             <app-trait-row [key]="k" />
           }
-          <h3>Virtudes {{ counterText('virtue') }}</h3>
-          @for (k of virtues(); track k) {
-            <app-trait-row [key]="k" />
+          @if (virtues().length) {
+            <h3>Virtudes {{ counterText('virtue') }}</h3>
+            @for (k of virtues(); track k) {
+              <app-trait-row [key]="k" />
+            }
           }
         }
 
         @case ('meritos') {
           <h2>Méritos y defectos</h2>
-          <p class="muted lead">
-            Los méritos cuestan puntos gratuitos. Los defectos te dan puntos, hasta
-            {{ store.budget('flaws')?.available ?? 7 }}.
-          </p>
+          @if (store.ruleset()?.meritsFlaws?.meritsBudget) {
+            <p class="muted lead">
+              Los méritos se pagan con tus ventajas {{ counterText('background') }}. Elige defectos
+              por {{ store.ruleset()?.meritsFlaws?.requiredFlawPoints }} puntos.
+            </p>
+          } @else {
+            <p class="muted lead">
+              Los méritos cuestan puntos gratuitos. Los defectos te dan puntos, hasta
+              {{ store.budget('flaws')?.available ?? 7 }}.
+            </p>
+          }
           @if (store.ruleset()?.meritsFlaws) {
             <div class="merits">
               <section aria-labelledby="merits-title">
@@ -223,14 +311,28 @@
             <dt><button type="button" class="trait" traitTooltip="voluntad">Voluntad</button></dt>
             <dd>{{ d.willpower }}</dd>
           </div>
+          @if (d.health !== undefined) {
+            <div>
+              <dt>Salud</dt>
+              <dd>{{ d.health }}</dd>
+            </div>
+          }
+          @if (d.bloodPotency !== undefined) {
+            <div>
+              <dt>Potencia de sangre</dt>
+              <dd>{{ d.bloodPotency }}</dd>
+            </div>
+          }
           <div>
             <dt>Generación</dt>
             <dd>{{ d.generation }}ª</dd>
           </div>
-          <div>
-            <dt>Sangre</dt>
-            <dd>{{ d.bloodPoolMax }} ({{ d.bloodPerTurn }}/turno)</dd>
-          </div>
+          @if (d.bloodPoolMax > 0) {
+            <div>
+              <dt>Sangre</dt>
+              <dd>{{ d.bloodPoolMax }} ({{ d.bloodPerTurn }}/turno)</dd>
+            </div>
+          }
         </dl>
       }
 
@@ -290,18 +392,20 @@
   <section class="group" [attr.aria-labelledby]="'grp-' + g.group">
     <div class="group__head">
       <h3 [id]="'grp-' + g.group">{{ g.label }}</h3>
-      <label class="priority">
-        <span class="visually-hidden">Prioridad de {{ g.label }}</span>
-        <select (change)="setPriority(category, g.group, $event)">
-          <option value="" [selected]="g.priority === undefined" disabled>Prioridad…</option>
-          @for (points of g.points; track $index) {
-            <option [value]="$index" [selected]="g.priority === $index">
-              {{ priorityNames[$index] }} ({{ points }})
-            </option>
-          }
-        </select>
-      </label>
-      <span class="group__count">{{ counterText(g.path) }}</span>
+      @if (g.points.length) {
+        <label class="priority">
+          <span class="visually-hidden">Prioridad de {{ g.label }}</span>
+          <select (change)="setPriority(category, g.group, $event)">
+            <option value="" [selected]="g.priority === undefined" disabled>Prioridad…</option>
+            @for (points of g.points; track $index) {
+              <option [value]="$index" [selected]="g.priority === $index">
+                {{ priorityNames[$index] }} ({{ points }})
+              </option>
+            }
+          </select>
+        </label>
+        <span class="group__count">{{ counterText(g.path) }}</span>
+      }
     </div>
     @for (k of g.traits; track k) {
       <app-trait-row [key]="k" />

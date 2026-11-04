@@ -233,3 +233,48 @@
     margin-top: 0.5rem;
   }
 }
+
+.pattern-status {
+  margin: 0 0 1.5rem;
+  color: var(--ash);
+  font-variant-numeric: tabular-nums;
+
+  &.error {
+    color: #f08a90;
+  }
+}
+
+.pattern-choice select {
+  width: 100%;
+}
+
+.specialties {
+  margin-top: 2rem;
+
+  ul {
+    margin: 0 0 0.75rem;
+    padding-left: 1.1rem;
+  }
+
+  li .link-button {
+    margin-left: 0.5rem;
+  }
+}
+
+.spec-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  select,
+  input {
+    padding: 0.45rem 0.6rem;
+    background: var(--vellum);
+    border: 1px solid var(--rule);
+  }
+
+  input {
+    flex: 1;
+    min-width: 10rem;
+  }
+}
