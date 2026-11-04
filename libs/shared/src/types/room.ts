@@ -1,3 +1,4 @@
+import type { DerivedStats } from '../engine/derived.js';
 import type { EditionId } from '../editions.js';
 import type { RuleViolation } from '../errors/violation.js';
 import type { CharacterStatus } from './character.js';
@@ -47,6 +48,8 @@ export interface RoomCharacterInfo {
   /** Errores que impiden cumplir (vacío si compliant). */
   violations: RuleViolation[];
   state: Partial<CharacterState>;
+  /** Máximos de la ficha (Voluntad, sangre) para el estado en partida. */
+  derived?: DerivedStats;
 }
 
 export interface RoomDetail {
