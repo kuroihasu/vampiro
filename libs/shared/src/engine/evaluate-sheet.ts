@@ -51,6 +51,28 @@ export function evaluateSheet(
     }
   }
 
+  // Puntos negativos o compras vacías: abaratarían otros presupuestos
+  for (const [key, dots] of Object.entries(sheet.traits)) {
+    if (dots < 0) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: key,
+        message: `${findTrait(ruleset, key)?.name ?? key} no puede tener puntos negativos.`,
+      });
+    }
+  }
+  for (const purchase of sheet.freebies) {
+    if (purchase.dots <= 0) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: purchase.traitKey,
+        message: 'Cada compra con puntos gratuitos debe sumar al menos un punto.',
+      });
+    }
+  }
+
   // Presupuestos por prioridad (atributos y habilidades)
   for (const budget of ruleset.creation.priorities) {
     const choice = sheet.priorities[budget.category] ?? {};
