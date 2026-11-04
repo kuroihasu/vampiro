@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { errorMessage } from '../../core/api-error';
 import { RoomsApi } from '../../core/rooms-api';
 import { FieldErrors } from '../auth/field-errors';
+import { EDITION_SHORT } from '../../shared/edition-label';
 
 /** Mis salas, crear una nueva y unirse con un código. */
 @Component({
@@ -22,6 +23,12 @@ export class Rooms {
   protected readonly list = httpResource<RoomSummary[]>(() => '/api/v1/rooms');
   protected readonly editions = EDITIONS.filter((e) => e.available);
   protected readonly editionName = (id: EditionId) => EDITIONS.find((e) => e.id === id)?.name ?? id;
+  protected readonly short = EDITION_SHORT;
+
+  /** Una figura por miembro (hasta 6) en la tarjeta de la sala. */
+  protected people(count: number): number[] {
+    return Array.from({ length: Math.min(count, 6) }, (_, i) => i);
+  }
 
   protected readonly createModel = signal<{ name: string; edition: EditionId }>({
     name: '',

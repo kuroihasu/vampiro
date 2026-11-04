@@ -7,6 +7,7 @@ import { ApiError, errorMessage } from '../../core/api-error';
 import { SessionStore } from '../../core/auth/session-store';
 import { Markdown } from '../../shared/markdown/markdown';
 import { TraitTooltip } from '../../shared/trait-tooltip';
+import { EDITION_SHORT } from '../../shared/edition-label';
 
 @Component({
   selector: 'app-wiki-article',
@@ -22,6 +23,10 @@ export class WikiArticlePage {
   protected readonly article = httpResource<WikiArticle>(
     () => `/api/v1/wiki/articles/${encodeURIComponent(this.slug())}`,
   );
+
+  protected editionShort(id: string): string {
+    return EDITION_SHORT[id as keyof typeof EDITION_SHORT] ?? id.toUpperCase();
+  }
 
   protected readonly categoryName = computed(() => {
     if (!this.article.hasValue()) return undefined;

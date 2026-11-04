@@ -13,7 +13,7 @@ import { type CharacterState, HEALTH_LEVELS, type RoomCharacterInfo } from '@vam
         @for (level of levels(); track $index; let i = $index) {
           <button
             type="button"
-            class="box"
+            class="pip"
             [class.hurt]="i < damage()"
             [disabled]="!editable()"
             [attr.aria-pressed]="i < damage()"

@@ -27,6 +27,11 @@ export class DicePanel {
   readonly userId = input.required<string>();
   readonly rolled = output<DiceRollRecord>();
 
+  /** Para dibujar la reserva como dados pequeños (con un tope de 20). */
+  protected range(n: number): number[] {
+    return Array.from({ length: Math.min(Math.max(n, 0), 20) }, (_, i) => i);
+  }
+
   private readonly api = inject(RoomsApi);
 
   protected readonly characterId = signal('');

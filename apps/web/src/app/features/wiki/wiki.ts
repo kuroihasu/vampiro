@@ -10,6 +10,7 @@ import {
 } from '@vampiro/shared';
 import { errorMessage } from '../../core/api-error';
 import { SessionStore } from '../../core/auth/session-store';
+import { EDITION_SHORT } from '../../shared/edition-label';
 
 /** Índice de la wiki: categorías a la izquierda, resultados a la derecha. */
 @Component({
@@ -70,6 +71,14 @@ export class Wiki {
         });
       }
     });
+  }
+
+  protected categoryLabel(id: string): string {
+    return WIKI_CATEGORIES.find((c) => c.id === id)?.name ?? id;
+  }
+
+  protected editionShort(id: string): string {
+    return EDITION_SHORT[id as keyof typeof EDITION_SHORT] ?? id.toUpperCase();
   }
 
   protected search(event: Event): void {

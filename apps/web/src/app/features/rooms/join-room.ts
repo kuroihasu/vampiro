@@ -53,6 +53,16 @@ import { RoomsApi } from '../../core/rooms-api';
   styles: `
     .join {
       max-width: 34rem;
+      margin: clamp(0rem, 4vw, 2.5rem) auto 0;
+      padding: clamp(1.75rem, 4vw, 2.75rem);
+      text-align: center;
+      background: linear-gradient(180deg, var(--vellum-2), var(--vellum));
+      border: 1px solid var(--rule);
+      border-top: 2px solid var(--blood);
+      border-radius: var(--radius-lg);
+      box-shadow:
+        var(--shadow-2),
+        0 0 80px -20px var(--blood-glow);
     }
     h1 {
       margin: 0.25rem 0 0.5rem;
