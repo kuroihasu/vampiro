@@ -124,9 +124,15 @@ export class RoomCharactersService {
     }
     if (errors.length) throw new ApiException(400, 'VALIDATION_ERROR', errors.join('; '));
 
+    const changes: Partial<CharacterState> = {
+      ...(dto.damage !== undefined ? { damage: dto.damage } : {}),
+      ...(dto.willpowerSpent !== undefined ? { willpowerSpent: dto.willpowerSpent } : {}),
+      ...(dto.blood !== undefined ? { blood: dto.blood } : {}),
+      ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+    };
     const state: Partial<CharacterState> = {
       ...((current.state ?? {}) as Partial<CharacterState>),
-      ...dto,
+      ...changes,
     };
     const link = await this.prisma.roomCharacter.update({
       where: { id: current.id },

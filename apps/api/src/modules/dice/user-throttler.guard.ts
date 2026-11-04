@@ -7,6 +7,7 @@ import type { AuthUser } from '../../common/auth/auth-user.js';
 export class UserThrottlerGuard extends ThrottlerGuard {
   protected override getTracker(req: Record<string, unknown>): Promise<string> {
     const user = req['user'] as AuthUser | undefined;
-    return Promise.resolve(user?.id ?? String(req['ip'] ?? 'desconocido'));
+    const ip = typeof req['ip'] === 'string' ? req['ip'] : 'desconocido';
+    return Promise.resolve(user?.id ?? ip);
   }
 }
