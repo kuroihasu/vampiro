@@ -1,6 +1,6 @@
 import type { CharacterSheet } from '../types/character.js';
 import type { RoomConfig } from '../types/room-config.js';
-import type { Ruleset } from '../types/ruleset.js';
+import type { PatternBudget, Ruleset } from '../types/ruleset.js';
 import type { TraitDefinition } from '../types/trait.js';
 import type { RuleViolation } from '../errors/violation.js';
 import { deriveStats } from './derived.js';
@@ -81,6 +81,7 @@ export function evaluateSheet(
   const budgeted = new Set<string>([
     ...ruleset.creation.priorities.map((b) => b.category),
     ...ruleset.creation.fixed.map((b) => b.category),
+    ...(ruleset.creation.patterns ?? []).map((b) => b.category),
   ]);
   for (const [key, dots] of Object.entries(sheet.traits)) {
     const def = findTrait(ruleset, key);
@@ -89,7 +90,9 @@ export function evaluateSheet(
         code: 'REQUISITO_NO_CUMPLIDO',
         severity: 'error',
         path: key,
-        message: `${def.name} no se reparte al crear; súbelo con puntos gratuitos.`,
+        message: ruleset.freebies
+          ? `${def.name} no se reparte al crear; súbelo con puntos gratuitos.`
+          : `${def.name} no se reparte al crear.`,
       });
     }
   }
@@ -165,11 +168,39 @@ export function evaluateSheet(
     }
   }
 
-  // Presupuestos fijos (disciplinas, trasfondos, virtudes)
+  // Presupuestos por patrón (V5: atributos 4/3/3/3/2/2/2/2/1, habilidades, disciplinas)
   const clan = ruleset.clans.find((c) => c.key === sheet.clan);
+  for (const budget of ruleset.creation.patterns ?? []) {
+    evaluatePattern(budget, sheet, ruleset, unspentSeverity, budgets, violations);
+  }
+
+  // Especialidades (V5)
+  if (ruleset.specialties) {
+    evaluateSpecialties(sheet, ruleset, unspentSeverity, budgets, violations);
+  }
+
+  // Méritos y defectos: según la edición, se pagan con gratuitos (V20) o con un presupuesto fijo (V5)
+  const merits = evaluateMeritsFlaws(sheet, ruleset, options, violations);
+  if (merits.maxFlawPoints > 0 || merits.flawPoints > 0) {
+    budgets.push({ path: 'flaws', available: merits.maxFlawPoints, spent: merits.flawPoints });
+  }
+  const requiredFlaws = ruleset.meritsFlaws?.requiredFlawPoints;
+  if (requiredFlaws !== undefined && merits.flawPoints < requiredFlaws) {
+    violations.push({
+      code: 'PUNTOS_SIN_REPARTIR',
+      severity: unspentSeverity,
+      path: 'flaws',
+      message: `Elige defectos por ${requiredFlaws} puntos (llevas ${merits.flawPoints}).`,
+    });
+  }
+  const meritsBudget = ruleset.meritsFlaws?.meritsBudget;
+
+  // Presupuestos fijos (disciplinas, trasfondos, virtudes)
   for (const budget of ruleset.creation.fixed) {
     const traits = ruleset.catalog.filter((t) => t.category === budget.category);
-    const spent = traits.reduce((sum, t) => sum + (sheet.traits[t.key] ?? 0), 0);
+    const spent =
+      traits.reduce((sum, t) => sum + (sheet.traits[t.key] ?? 0), 0) +
+      (meritsBudget === budget.category ? merits.meritCost : 0);
     budgets.push({ path: budget.category, available: budget.points, spent });
 
     if (spent > budget.points) {
@@ -204,19 +235,13 @@ export function evaluateSheet(
     }
   }
 
-  // Méritos y defectos: los méritos cuestan puntos gratuitos y los defectos los devuelven
-  const merits = evaluateMeritsFlaws(sheet, ruleset, options, violations);
-  if (merits.maxFlawPoints > 0 || merits.flawPoints > 0) {
-    budgets.push({ path: 'flaws', available: merits.maxFlawPoints, spent: merits.flawPoints });
-  }
-
   // Puntos gratuitos
   if (ruleset.freebies) {
     const total =
       ruleset.freebies.total +
       (options.roomConfig?.extraFreebies ?? 0) +
-      Math.min(merits.flawPoints, merits.maxFlawPoints);
-    let spent = merits.meritCost;
+      (meritsBudget ? 0 : Math.min(merits.flawPoints, merits.maxFlawPoints));
+    let spent = meritsBudget ? 0 : merits.meritCost;
     for (const purchase of sheet.freebies) {
       const def = findTrait(ruleset, purchase.traitKey);
       if (!def) continue;
@@ -284,6 +309,152 @@ export function evaluateSheet(
   }
 
   return { budgets, violations, valid: !violations.some((v) => v.severity === 'error') };
+}
+
+/** Compara los valores de los rasgos de la categoría con el patrón elegido. */
+function evaluatePattern(
+  budget: PatternBudget,
+  sheet: CharacterSheet,
+  ruleset: Ruleset,
+  unspentSeverity: 'error' | 'warning',
+  budgets: BudgetStatus[],
+  violations: RuleViolation[],
+): void {
+  const traits = ruleset.catalog.filter((t) => t.category === budget.category);
+  const assigned = traits
+    .map((t) => ({ trait: t, value: traitTotal(sheet, ruleset, t.key) }))
+    .filter((a) => a.value > 0);
+  const spent = assigned.reduce((n, a) => n + a.value, 0);
+
+  if (budget.clanOnly) {
+    const clan = ruleset.clans.find((c) => c.key === sheet.clan);
+    for (const { trait } of assigned) {
+      if (!clan?.disciplines.includes(trait.key)) {
+        violations.push({
+          code: 'DISCIPLINA_FUERA_DE_CLAN',
+          severity: 'error',
+          path: trait.key,
+          message: clan
+            ? `${trait.name} no es disciplina de clan ${clan.name}; al crear solo puedes usar disciplinas de clan.`
+            : `Elige un clan antes de repartir puntos en ${trait.name}.`,
+        });
+      }
+    }
+  }
+
+  const option =
+    budget.options.length === 1
+      ? budget.options[0]
+      : budget.options.find((o) => o.id === sheet.patternChoices?.[budget.key]);
+  if (!option) {
+    budgets.push({ path: budget.key, available: 0, spent });
+    violations.push({
+      code: 'PRIORIDAD_INVALIDA',
+      severity: unspentSeverity,
+      path: budget.key,
+      message: `Elige una distribución para ${budget.label}.`,
+    });
+    return;
+  }
+  budgets.push({
+    path: budget.key,
+    available: option.values.reduce((n, v) => n + v, 0),
+    spent,
+  });
+
+  const allowed = countBy(option.values);
+  const used = countBy(assigned.map((a) => a.value));
+  const excess: string[] = [];
+  const missing: string[] = [];
+  for (const [value, count] of used) {
+    const limit = allowed.get(value) ?? 0;
+    if (count > limit) {
+      excess.push(
+        limit === 0
+          ? `ninguno puede tener ${value}`
+          : `solo ${limit} ${limit === 1 ? 'puede' : 'pueden'} tener ${value}`,
+      );
+    }
+  }
+  for (const [value, count] of allowed) {
+    const have = used.get(value) ?? 0;
+    if (have < count) missing.push(`${count - have}× ${value}`);
+  }
+
+  if (excess.length) {
+    violations.push({
+      code: 'PRESUPUESTO_EXCEDIDO',
+      severity: 'error',
+      path: budget.key,
+      message: `${budget.label} (${option.label}): ${excess.join('; ')}.`,
+    });
+  } else if (missing.length) {
+    violations.push({
+      code: 'PUNTOS_SIN_REPARTIR',
+      severity: unspentSeverity,
+      path: budget.key,
+      message: `${budget.label}: falta asignar ${missing.join(', ')}.`,
+    });
+  }
+}
+
+function countBy(values: number[]): Map<number, number> {
+  const counts = new Map<number, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  return counts;
+}
+
+/** Especialidades: cada una exige puntos en su habilidad; algunas habilidades la exigen. */
+function evaluateSpecialties(
+  sheet: CharacterSheet,
+  ruleset: Ruleset,
+  unspentSeverity: 'error' | 'warning',
+  budgets: BudgetStatus[],
+  violations: RuleViolation[],
+): void {
+  const rules = ruleset.specialties;
+  if (!rules) return;
+  const list = sheet.specialties ?? [];
+  const required = rules.freeFor.filter((k) => traitTotal(sheet, ruleset, k) > 0);
+  const allowed = required.length + rules.extra;
+  budgets.push({ path: 'specialties', available: allowed, spent: list.length });
+
+  for (const s of list) {
+    const def = findTrait(ruleset, s.skill);
+    if (!def || def.category !== 'ability') {
+      violations.push({
+        code: 'RASGO_DESCONOCIDO',
+        severity: 'error',
+        path: s.skill,
+        message: `"${s.skill}" no es una habilidad de ${ruleset.edition.toUpperCase()}.`,
+      });
+    } else if (traitTotal(sheet, ruleset, s.skill) === 0) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: s.skill,
+        message: `Para la especialidad "${s.name}" necesitas al menos un punto en ${def.name}.`,
+      });
+    }
+  }
+  if (list.length > allowed) {
+    violations.push({
+      code: 'PRESUPUESTO_EXCEDIDO',
+      severity: 'error',
+      path: 'specialties',
+      message: `Tienes ${list.length} especialidades; puedes tener ${allowed}.`,
+    });
+  }
+  const missing = required.filter((k) => !list.some((s) => s.skill === k));
+  if (missing.length) {
+    const names = missing.map((k) => findTrait(ruleset, k)?.name ?? k).join(', ');
+    violations.push({
+      code: 'PUNTOS_SIN_REPARTIR',
+      severity: unspentSeverity,
+      path: 'specialties',
+      message: `${names} necesita${missing.length > 1 ? 'n' : ''} una especialidad.`,
+    });
+  }
 }
 
 interface MeritsFlawsResult {

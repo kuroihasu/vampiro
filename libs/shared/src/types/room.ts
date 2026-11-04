@@ -14,6 +14,8 @@ export interface CharacterState {
   willpowerSpent: number;
   /** Puntos de sangre actuales. */
   blood: number;
+  /** V5: Hambre actual (0-5); sus dados se incluyen en cada tirada. */
+  hunger: number;
   notes: string;
 }
 
