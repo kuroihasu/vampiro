@@ -33,6 +33,8 @@ ejecutar y tiene la última palabra.
 | `src/modules/wiki`       | `GET /wiki/categories`, `/wiki/articles?categoria=&edicion=&q=`, `/wiki/articles/:slug`                                                                                                                                        |
 | `src/modules/characters` | `GET /characters?edicion=`, `POST /characters`, `GET/PUT/DELETE /characters/:id`, `POST /characters/:id/evaluate` y `/complete`                                                                                                |
 | `src/modules/rooms`      | `POST/GET /rooms`, `GET /rooms/:id`, `PATCH /rooms/:id/config`, `POST /rooms/:id/invite-code`, `GET /rooms/invite/:codigo`, `POST /rooms/join`, `DELETE /rooms/:id/members/:userId`, `POST/PATCH/DELETE /rooms/:id/characters` |
+| `src/modules/dice`       | `POST /rooms/:id/dice-pool`, `POST /rooms/:id/rolls`, `GET /rooms/:id/rolls?cursor=`                                                                                                                                           |
+| `src/modules/realtime`   | WebSocket Socket.IO en el namespace `/rooms` (eventos de la sala)                                                                                                                                                              |
 | `src/modules/rules`      | `GET /editions`, `GET /rulesets/:edicion`, `GET /traits/:ed/:k`                                                                                                                                                                |
 | `src/modules/health`     | `GET /health`                                                                                                                                                                                                                  |
 
@@ -54,7 +56,17 @@ miembro se le responde 404, y lo reservado al master responde 403. Cada ficha vi
 evalúa en modo completo con la configuración de la sala (con las reglas de NPC si lo es); se
 recalcula al vincularla, al guardar la ficha y al cambiar la configuración.
 
-Próximos módulos: `dice`, `realtime`.
+**Dados:** las tiradas se hacen en el servidor (`crypto.randomInt`) y se interpretan con
+`resolveRoll` de `@vampiro/shared`. Son inmutables. La reserva sale de la ficha (rasgos o
+acción sugerida) o es una tirada libre. Hay límite de 10 tiradas cada 10 segundos por persona.
+`PATCH /rooms/:id/characters/:linkId/state` guarda salud, voluntad y sangre en partida.
+
+**Tiempo real:** el cliente se conecta a `/rooms` con el mismo access token
+(`handshake.auth.token`) y entra con `room.join`. Las escrituras van por REST y el servidor
+avisa con `member.joined`, `member.left`, `character.linked`, `character.updated`,
+`character.unlinked`, `room.config.updated` y `roll.created`. Con visibilidad "solo master",
+una tirada solo llega al master y a quien la hizo. Al reconectar, la web vuelve a entrar en
+la sala y recarga el historial para recuperar lo que se perdió.
 
 ### apps/web
 
@@ -64,7 +76,7 @@ Próximos módulos: `dice`, `realtime`.
 | `src/app/shared`   | Markdown seguro y directiva `traitTooltip`                                      |
 | `src/app/features` | Áreas con lazy loading: `home`, `wiki`, `auth`, `characters`, `rooms`           |
 
-En desarrollo, `/api` se redirige a `http://localhost:3000` (`proxy.conf.json`).
+En desarrollo, `/api` y `/socket.io` se redirigen a `http://localhost:3000` (`proxy.conf.json`).
 
 El editor de fichas (`/personajes/:id`) va por pasos y evalúa la ficha en vivo con el mismo
 motor que la API: los puntos que romperían una regla quedan deshabilitados y se explica el
@@ -131,6 +143,7 @@ pruebas; nunca tocan la base de desarrollo.
 - Fase 1: base, cuentas de usuario y wiki de solo lectura con tooltips.
 - Fase 2: fichas de personaje V20 con editor por pasos y validación en cliente y servidor.
 - Fase 3: salas con invitación, configuración del master y validez de las fichas en la sala.
+- Fase 4: tiradas en el servidor, historial en vivo por WebSocket y estado en partida.
 
 Solo el ruleset de V20 está cargado y es parcial; sus números deben revisarse contra el manual.
 Los textos de rasgos y de la wiki son resúmenes propios.
