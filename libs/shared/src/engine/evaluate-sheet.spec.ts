@@ -164,6 +164,25 @@ describe('evaluateSheet (V20): reglas de creación', () => {
 });
 
 describe('evaluateSheet (V20): configuración de sala', () => {
+  const temporisOnlyNpc = {
+    ...DEFAULT_ROOM_CONFIG,
+    disciplineRules: [{ discipline: 'temporis', players: false, npc: true }],
+  };
+  const withTemporis: CharacterSheet = {
+    ...emptySheet(),
+    freebies: [{ traitKey: 'temporis', dots: 1 }],
+  };
+
+  it('una disciplina vetada a jugadores se permite a un NPC', () => {
+    const asPlayer = evaluateSheet(withTemporis, V20_RULESET, { roomConfig: temporisOnlyNpc });
+    const asNpc = evaluateSheet(withTemporis, V20_RULESET, {
+      roomConfig: temporisOnlyNpc,
+      isNpc: true,
+    });
+    expect(asPlayer.violations.map((v) => v.code)).toContain('DISCIPLINA_NO_PERMITIDA');
+    expect(asNpc.violations.map((v) => v.code)).not.toContain('DISCIPLINA_NO_PERMITIDA');
+  });
+
   it('rechaza un clan que el master no permite', () => {
     const sheet: CharacterSheet = { ...emptySheet(), clan: 'tremere' };
     const result = evaluateSheet(sheet, V20_RULESET, {

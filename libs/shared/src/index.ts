@@ -14,6 +14,9 @@ export {
 export * from './types/parse-sheet.js';
 export { DEFAULT_ROOM_CONFIG } from './types/room-config.js';
 export type { RoomConfig, DisciplineRule } from './types/room-config.js';
+export * from './types/parse-room-config.js';
+export type * from './types/room.js';
+export { ROOM_NAME_MAX_LENGTH } from './types/room.js';
 
 export * from './errors/codes.js';
 export type * from './errors/violation.js';

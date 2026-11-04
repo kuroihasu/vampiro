@@ -23,6 +23,8 @@ export interface EvaluateOptions {
   /** `complete` convierte los puntos sin repartir en error. Por defecto `draft`. */
   mode?: 'draft' | 'complete';
   roomConfig?: RoomConfig;
+  /** La ficha es un NPC de la sala: se aplican las reglas de disciplinas para NPC. */
+  isNpc?: boolean;
 }
 
 /**
@@ -268,7 +270,7 @@ export function evaluateSheet(
 
   // Configuración de la sala
   if (options.roomConfig) {
-    violations.push(...checkRoomConfig(sheet, ruleset, options.roomConfig));
+    violations.push(...checkRoomConfig(sheet, ruleset, options.roomConfig, options.isNpc));
   }
 
   return { budgets, violations, valid: !violations.some((v) => v.severity === 'error') };
