@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Service, inject, signal } from '@angular/core';
 import type { EditionId, EditionInfo, Ruleset } from '@vampiro/shared';
 import { Observable, of, tap } from 'rxjs';
 
@@ -7,17 +7,19 @@ import { Observable, of, tap } from 'rxjs';
  * Carga las ediciones y los rulesets desde la API y los guarda en memoria.
  * El editor de fichas y la directiva de tooltips leen de aquí.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class RulesService {
   private readonly http = inject(HttpClient);
   private readonly cache = new Map<EditionId, Ruleset>();
+  private readonly editionsState = signal<readonly EditionInfo[]>([]);
 
-  readonly editions = signal<readonly EditionInfo[]>([]);
+  /** Solo lectura: el estado se cambia a través de los métodos del servicio. */
+  readonly editions = this.editionsState.asReadonly();
 
   loadEditions(): Observable<readonly EditionInfo[]> {
     return this.http
       .get<EditionInfo[]>('/api/v1/editions')
-      .pipe(tap((editions) => this.editions.set(editions)));
+      .pipe(tap((editions) => this.editionsState.set(editions)));
   }
 
   ruleset(edition: EditionId): Observable<Ruleset> {
