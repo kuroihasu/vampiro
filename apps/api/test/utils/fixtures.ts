@@ -90,6 +90,47 @@ export const COMPLETE_V5_SHEET: CharacterSheet = {
   ],
 };
 
+/** Ficha completa de Edad Oscura: Lasombra en el Camino de los Reyes. */
+export const COMPLETE_DARK_AGES_SHEET: CharacterSheet = {
+  clan: 'lasombra',
+  road: 'reyes',
+  priorities: {
+    attribute: { physical: 2, social: 0, mental: 1 },
+    ability: { talents: 0, skills: 1, knowledges: 2 },
+  },
+  traits: {
+    fuerza: 1,
+    destreza: 1,
+    resistencia: 1,
+    carisma: 3,
+    manipulacion: 3,
+    apariencia: 1,
+    percepcion: 2,
+    inteligencia: 2,
+    astucia: 1,
+    alerta: 2,
+    consciencia: 1,
+    empatia: 2,
+    expresion: 2,
+    intimidacion: 3,
+    liderazgo: 3,
+    etiqueta: 3,
+    'pelea-armas': 3,
+    cabalgar: 3,
+    politica: 3,
+    leyes: 2,
+    dominacion: 2,
+    obtenebracion: 1,
+    dominio: 2,
+    recursos: 2,
+    estatus: 1,
+    conviccion: 3,
+    autocontrol: 2,
+    coraje: 2,
+  },
+  freebies: [{ traitKey: 'voluntad', dots: 2 }],
+};
+
 /** Registra un usuario y devuelve su cabecera Authorization. */
 export async function registerUser(server: App, email: string): Promise<{ Authorization: string }> {
   const res = await request(server)
