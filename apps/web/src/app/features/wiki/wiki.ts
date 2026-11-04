@@ -9,6 +9,7 @@ import {
   type WikiCategory,
 } from '@vampiro/shared';
 import { errorMessage } from '../../core/api-error';
+import { SessionStore } from '../../core/auth/session-store';
 
 /** Índice de la wiki: categorías a la izquierda, resultados a la derecha. */
 @Component({
@@ -23,6 +24,8 @@ export class Wiki {
   readonly q = input<string>();
 
   private readonly router = inject(Router);
+  private readonly session = inject(SessionStore);
+  protected readonly isAdmin = computed(() => this.session.user()?.role === 'admin');
 
   protected readonly category = computed(() => {
     const id = this.categoria();

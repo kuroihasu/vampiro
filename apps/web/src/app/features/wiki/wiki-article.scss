@@ -1,5 +1,13 @@
 .back {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 68ch;
   margin: 0 0 2rem;
+
+  .edit {
+    color: var(--gold);
+  }
 
   a {
     color: var(--ash);

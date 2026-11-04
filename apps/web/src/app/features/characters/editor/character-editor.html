@@ -140,6 +140,32 @@
           }
         }
 
+        @case ('meritos') {
+          <h2>Méritos y defectos</h2>
+          <p class="muted lead">
+            Los méritos cuestan puntos gratuitos. Los defectos te dan puntos, hasta
+            {{ store.budget('flaws')?.available ?? 7 }}.
+          </p>
+          @if (store.ruleset()?.meritsFlaws) {
+            <div class="merits">
+              <section aria-labelledby="merits-title">
+                <h3 id="merits-title">Méritos</h3>
+                @for (k of merits(); track k) {
+                  <app-merit-row [key]="k" />
+                }
+              </section>
+              <section aria-labelledby="flaws-title">
+                <h3 id="flaws-title">Defectos {{ counterText('flaws') }}</h3>
+                @for (k of flaws(); track k) {
+                  <app-merit-row [key]="k" />
+                }
+              </section>
+            </div>
+          } @else {
+            <p class="muted">Esta edición no usa méritos y defectos.</p>
+          }
+        }
+
         @case ('gratuitos') {
           <h2>Puntos gratuitos {{ counterText('freebies') }}</h2>
           <p class="muted lead">

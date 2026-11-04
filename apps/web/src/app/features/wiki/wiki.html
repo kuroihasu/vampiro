@@ -43,7 +43,12 @@
   </aside>
 
   <section class="results" aria-labelledby="wiki-results-title" aria-live="polite">
-    <h2 id="wiki-results-title">{{ heading() }}</h2>
+    <div class="results__head">
+      <h2 id="wiki-results-title">{{ heading() }}</h2>
+      @if (isAdmin()) {
+        <a class="button secondary" routerLink="/wiki/nuevo">Nuevo artículo</a>
+      }
+    </div>
 
     @if (errorText(); as message) {
       <p class="alert" role="alert">{{ message }}</p>

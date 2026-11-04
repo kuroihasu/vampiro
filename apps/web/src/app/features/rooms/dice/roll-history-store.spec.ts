@@ -69,15 +69,13 @@ describe('RollHistoryStore', () => {
       nextCursor: 'c1',
     });
     const sync = store.resync();
-    http
-      .expectOne('/api/v1/rooms/r1/rolls?limit=20')
-      .flush({
-        items: [
-          roll('d', '2026-11-04T10:03:00Z'),
-          roll('c', '2026-11-04T10:02:00Z'),
-          roll('b', '2026-11-04T10:01:00Z'),
-        ],
-      });
+    http.expectOne('/api/v1/rooms/r1/rolls?limit=20').flush({
+      items: [
+        roll('d', '2026-11-04T10:03:00Z'),
+        roll('c', '2026-11-04T10:02:00Z'),
+        roll('b', '2026-11-04T10:01:00Z'),
+      ],
+    });
     await sync;
     expect(store.items().map((r) => r.id)).toEqual(['d', 'c', 'b', 'a']);
   });
