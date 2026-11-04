@@ -45,6 +45,10 @@ y refresh token opaco en una cookie `httpOnly` y `SameSite=Strict` limitada a `/
 El refresh se guarda como hash, se rota en cada uso y, si alguien reutiliza uno ya rotado,
 se revocan todas las sesiones de ese usuario. Login y registro tienen límite de intentos.
 
+**Wiki:** la lectura es pública. Crear, editar y borrar artículos exige el rol `admin`
+(`RolesGuard`). Para dar ese rol a tu cuenta, regístrate en la web y luego ejecuta
+`pnpm db:admin tu@email.com`.
+
 **Fichas:** el `PUT` valida la forma de la ficha (400) y las reglas con `evaluateSheet` de
 `@vampiro/shared` (422 `RULE_VIOLATION` con la lista de violaciones). El cuerpo lleva el
 `updatedAt` que se editó: si otra pestaña guardó antes, responde 409 `CONFLICTO_VERSION`.
@@ -133,6 +137,7 @@ pnpm db:up            # arranca PostgreSQL
 pnpm db:down          # lo para (los datos se conservan en un volumen de Docker)
 pnpm db:migrate       # regenera el cliente de Prisma y aplica/crea migraciones (--name nueva)
 pnpm db:seed          # vuelve a cargar los artículos de ejemplo (idempotente)
+pnpm db:admin <email> # da el rol de administrador a una cuenta ya registrada
 ```
 
 Los e2e aplican las migraciones a `vampiro_test` antes de empezar y vacían las tablas entre
@@ -144,6 +149,8 @@ pruebas; nunca tocan la base de desarrollo.
 - Fase 2: fichas de personaje V20 con editor por pasos y validación en cliente y servidor.
 - Fase 3: salas con invitación, configuración del master y validez de las fichas en la sala.
 - Fase 4: tiradas en el servidor, historial en vivo por WebSocket y estado en partida.
+- Fase 5: méritos y defectos de V20 en la ficha y gestión de la wiki para administradores.
 
 Solo el ruleset de V20 está cargado y es parcial; sus números deben revisarse contra el manual.
+Los costes de méritos y defectos de V20 son orientativos y también conviene revisarlos.
 Los textos de rasgos y de la wiki son resúmenes propios.
