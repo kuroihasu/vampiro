@@ -1,0 +1,127 @@
+<form class="config" (submit)="$event.preventDefault(); save.emit(draft())">
+  <fieldset>
+    <legend>Disciplinas</legend>
+    <p class="muted hint">
+      Desmarca lo que no quieras en la partida. Puedes permitir algo solo a los NPC, por ejemplo
+      Temporis.
+    </p>
+    <table class="disciplines">
+      <thead>
+        <tr>
+          <th scope="col">Disciplina</th>
+          <th scope="col">Jugadores</th>
+          <th scope="col">NPC</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of disciplines(); track d.key) {
+          <tr>
+            <th scope="row">
+              <button type="button" class="trait" [traitTooltip]="d.key">{{ d.name }}</button>
+            </th>
+            <td>
+              <input
+                type="checkbox"
+                [checked]="allowed(d.key, 'players')"
+                [attr.aria-label]="d.name + ' para jugadores'"
+                (change)="toggleDiscipline(d.key, 'players', $event)"
+              />
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                [checked]="allowed(d.key, 'npc')"
+                [attr.aria-label]="d.name + ' para NPC'"
+                (change)="toggleDiscipline(d.key, 'npc', $event)"
+              />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </fieldset>
+
+  <fieldset>
+    <legend>Clanes permitidos</legend>
+    <div class="checks">
+      @for (c of clans(); track c.key) {
+        <label>
+          <input type="checkbox" [checked]="clanOn(c.key)" (change)="toggleClan(c.key, $event)" />
+          {{ c.name }}
+        </label>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Creación de personajes</legend>
+    <label class="inline">
+      <input type="checkbox" [checked]="draft().allowMeritsFlaws" (change)="setMerits($event)" />
+      Méritos y defectos
+    </label>
+    <div class="numbers">
+      <label>
+        Puntos gratuitos extra
+        <input
+          type="number"
+          inputmode="numeric"
+          [value]="draft().extraFreebies"
+          (change)="setNumber('extraFreebies', $event)"
+        />
+      </label>
+      <label>
+        Generación mínima
+        <input
+          type="number"
+          inputmode="numeric"
+          placeholder="Sin límite"
+          [value]="draft().minGeneration ?? ''"
+          (change)="setNumber('minGeneration', $event)"
+        />
+      </label>
+      <label>
+        Generación máxima
+        <input
+          type="number"
+          inputmode="numeric"
+          placeholder="Sin límite"
+          [value]="draft().maxGeneration ?? ''"
+          (change)="setNumber('maxGeneration', $event)"
+        />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Tiradas</legend>
+    <label class="inline">
+      <input
+        type="radio"
+        name="dice-visibility"
+        [checked]="draft().diceVisibility === 'all'"
+        (change)="setVisibility('all')"
+      />
+      Todos ven todas las tiradas
+    </label>
+    <label class="inline">
+      <input
+        type="radio"
+        name="dice-visibility"
+        [checked]="draft().diceVisibility === 'master-only'"
+        (change)="setVisibility('master-only')"
+      />
+      Solo el master ve las tiradas de los demás
+    </label>
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit" class="button" [disabled]="!changed() || saving()">
+      {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+    </button>
+    @if (changed()) {
+      <button type="button" class="link-button" (click)="draft.set(config())">
+        Descartar cambios
+      </button>
+    }
+  </div>
+</form>

@@ -1,0 +1,211 @@
+<p class="back"><a routerLink="/salas">Volver a mis salas</a></p>
+
+@if (loadError(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+} @else if (room.hasValue()) {
+  @let r = room.value();
+  <header class="head">
+    <h1>{{ r.name }}</h1>
+    <p class="muted">
+      Partida de {{ editionName() }}.
+      {{ isMaster() ? 'Eres el master.' : 'Juegas en esta sala.' }}
+    </p>
+  </header>
+
+  <div class="status" aria-live="polite">
+    @if (error(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @if (notice(); as message) {
+      <p class="notice" role="status">{{ message }}</p>
+    }
+  </div>
+
+  <div class="room">
+    <div class="main">
+      <section aria-labelledby="chars-title">
+        <h2 id="chars-title">Personajes en la sala</h2>
+        <ul class="characters">
+          @for (c of r.characters; track c.id) {
+            <li [class.npc]="c.isNpc">
+              <div class="who">
+                <span class="name">{{ c.name }}</span>
+                <span class="muted">
+                  {{ c.isNpc ? 'NPC' : 'Personaje' }} de {{ c.controllerName }}
+                  @if (c.status === 'draft') {
+                    (borrador)
+                  }
+                </span>
+              </div>
+              <div class="compliance">
+                @if (c.compliant) {
+                  <span class="ok">Cumple las reglas</span>
+                } @else {
+                  <button
+                    type="button"
+                    class="link-button warn"
+                    [attr.aria-expanded]="openViolations() === c.id"
+                    [attr.aria-controls]="'viol-' + c.id"
+                    (click)="openViolations.set(openViolations() === c.id ? undefined : c.id)"
+                  >
+                    No cumple: {{ c.violations.length }}
+                    {{ c.violations.length === 1 ? 'motivo' : 'motivos' }}
+                  </button>
+                }
+              </div>
+              <div class="row-actions">
+                @if (isMaster()) {
+                  <button
+                    type="button"
+                    class="link-button"
+                    [disabled]="busy()"
+                    (click)="toggleNpc(c)"
+                  >
+                    {{ c.isNpc ? 'Hacer personaje' : 'Hacer NPC' }}
+                  </button>
+                }
+                @if (canRemove(c)) {
+                  <button type="button" class="link-button" [disabled]="busy()" (click)="unlink(c)">
+                    Retirar
+                  </button>
+                }
+              </div>
+              @if (openViolations() === c.id) {
+                <ul class="violations" [id]="'viol-' + c.id">
+                  @for (v of c.violations; track v.code + v.path) {
+                    <li>{{ v.message }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          } @empty {
+            <li class="muted empty">Todavía no hay personajes. Trae el tuyo con el formulario.</li>
+          }
+        </ul>
+
+        <form class="link" (submit)="link($event)">
+          <h3>Traer una ficha</h3>
+          @if (linkable().length) {
+            <div class="link__row">
+              <label class="visually-hidden" for="link-character">Ficha</label>
+              <select
+                id="link-character"
+                [value]="selectedCharacter()"
+                (change)="selectedCharacter.set($any($event.target).value)"
+              >
+                <option value="" disabled>Elige una de tus fichas…</option>
+                @for (c of linkable(); track c.id) {
+                  <option [value]="c.id">
+                    {{ c.name }}{{ c.status === 'draft' ? ' (borrador)' : '' }}
+                  </option>
+                }
+              </select>
+              @if (isMaster()) {
+                <label class="inline">
+                  <input
+                    type="checkbox"
+                    [checked]="linkAsNpc()"
+                    (change)="linkAsNpc.set($any($event.target).checked)"
+                  />
+                  Como NPC
+                </label>
+              }
+              <button type="submit" class="button" [disabled]="!selectedCharacter() || busy()">
+                Traer
+              </button>
+            </div>
+          } @else {
+            <p class="muted">
+              No tienes más fichas de esta edición.
+              <a routerLink="/personajes">Crea una</a>.
+            </p>
+          }
+        </form>
+      </section>
+
+      @if (isMaster() && ruleset.hasValue()) {
+        <section aria-labelledby="config-title" class="master">
+          <h2 id="config-title">Reglas de la sala</h2>
+          <app-room-config-editor
+            [config]="r.config"
+            [ruleset]="ruleset.value()"
+            [saving]="busy()"
+            (save)="saveConfig($event)"
+          />
+        </section>
+      }
+    </div>
+
+    <aside class="side">
+      @if (isMaster() && r.invite; as invite) {
+        <section class="box" aria-labelledby="invite-title">
+          <h2 id="invite-title">Invitar</h2>
+          <p class="code" aria-label="Código de invitación">{{ invite.code }}</p>
+          @if (invite.expiresAt) {
+            <p class="muted small">
+              Caduca el {{ invite.expiresAt.slice(0, 16).replace('T', ' a las ') }}.
+            </p>
+          }
+          <p class="small link-text">{{ inviteLink() }}</p>
+          <button type="button" class="button secondary" (click)="copyInvite()">
+            Copiar enlace
+          </button>
+          <div class="regen">
+            <label for="invite-hours" class="small">Caducidad del código nuevo</label>
+            <select
+              id="invite-hours"
+              [value]="inviteHours()"
+              (change)="inviteHours.set($any($event.target).value)"
+            >
+              <option value="">Sin caducidad</option>
+              <option value="24">24 horas</option>
+              <option value="168">Una semana</option>
+            </select>
+            <button
+              type="button"
+              class="link-button"
+              [disabled]="busy()"
+              (click)="regenerateInvite()"
+            >
+              Crear código nuevo
+            </button>
+          </div>
+        </section>
+      }
+
+      <section class="box" aria-labelledby="members-title">
+        <h2 id="members-title">Miembros</h2>
+        <ul class="members">
+          @for (m of r.members; track m.userId) {
+            <li>
+              <span>
+                {{ m.displayName }}
+                @if (m.role === 'master') {
+                  <em class="muted">master</em>
+                }
+              </span>
+              @if (isMaster() && m.role !== 'master') {
+                <button
+                  type="button"
+                  class="link-button"
+                  [disabled]="busy()"
+                  [attr.aria-label]="'Expulsar a ' + m.displayName"
+                  (click)="removeMember(m.userId, m.displayName)"
+                >
+                  Expulsar
+                </button>
+              }
+            </li>
+          }
+        </ul>
+        @if (!isMaster()) {
+          <button type="button" class="link-button" [disabled]="busy()" (click)="leave()">
+            Salir de la sala
+          </button>
+        }
+      </section>
+    </aside>
+  </div>
+} @else {
+  <p class="muted">Cargando la sala…</p>
+}
