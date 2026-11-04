@@ -3,6 +3,9 @@ packages:
   - libs/*
 
 onlyBuiltDependencies:
+  - '@prisma/engines'
+  - argon2
+  - prisma
   - '@parcel/watcher'
   - esbuild
   - lmdb
