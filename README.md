@@ -155,10 +155,13 @@ pruebas; nunca tocan la base de desarrollo.
 - Fase 4: tiradas en el servidor, historial en vivo por WebSocket y estado en partida.
 - Fase 5: méritos y defectos de V20 en la ficha y gestión de la wiki para administradores.
 - Fase 6: V5 completa (creación por patrones, distribuciones, especialidades, ventajas, Hambre y tiradas con críticos).
+- Fase 7: Vampiro: Edad Oscura sobre el motor de V20, con Caminos en lugar de Humanidad.
 
-Están cargados los rulesets de V20 y V5. Los dos son parciales y sus números deben revisarse
+Están cargados los rulesets de V20, V5 y Edad Oscura (Revisada sigue pendiente). Los dos son parciales y sus números deben revisarse
 contra los manuales; en V5 conviene revisar los patrones de creación, las ventajas, los
 defectos obligatorios, las especialidades y los costes. De V5 faltan los tipos de depredador,
 las generaciones distintas de neonato y la alquimia de sangre débil.
+En Edad Oscura conviene revisar la generación inicial (12ª), la tabla de sangre y los costes;
+faltan sus méritos y defectos propios.
 Los costes de méritos y defectos de V20 son orientativos y también conviene revisarlos.
 Los textos de rasgos y de la wiki son resúmenes propios.
