@@ -30,7 +30,7 @@ describe('parseMarkdown', () => {
       kind: 'paragraph',
       children: [
         { kind: 'text', text: 'Usa ' },
-        { kind: 'trait', key: 'celeridad', children: [{ kind: 'text', text: 'Celeridad' }] },
+        { kind: 'trait', key: 'celeridad', label: 'Celeridad' },
         { kind: 'text', text: '.' },
       ],
     });

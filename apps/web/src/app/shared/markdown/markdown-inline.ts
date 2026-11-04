@@ -29,9 +29,7 @@ import type { MdInline } from './parse-markdown';
           <del><app-md-inline [nodes]="node.children" /></del>
         }
         @case ('trait') {
-          <button type="button" class="trait" [traitTooltip]="node.key">
-            <app-md-inline [nodes]="node.children" />
-          </button>
+          <button type="button" class="trait" [traitTooltip]="node.key">{{ node.label }}</button>
         }
         @case ('internal') {
           <a [routerLink]="node.path"><app-md-inline [nodes]="node.children" /></a>

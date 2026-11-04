@@ -11,7 +11,7 @@ export type MdInline =
   | { kind: 'code'; text: string }
   | { kind: 'br' }
   | { kind: 'strong' | 'em' | 'del'; children: MdInline[] }
-  | { kind: 'trait'; key: string; children: MdInline[] }
+  | { kind: 'trait'; key: string; label: string }
   | { kind: 'internal'; path: string; children: MdInline[] }
   | { kind: 'external'; href: string; children: MdInline[] };
 
@@ -108,7 +108,7 @@ function toLink(token: Tokens.Link): MdInline[] {
   const children = toInlines(token.tokens);
   const href = token.href.trim();
   const trait = TRAIT_LINK.exec(href);
-  if (trait) return [{ kind: 'trait', key: trait[1]!, children }];
+  if (trait) return [{ kind: 'trait', key: trait[1]!, label: plainText(children) }];
   if (href.startsWith('/') && !href.startsWith('//'))
     return [{ kind: 'internal', path: href, children }];
   if (/^https?:\/\//i.test(href)) return [{ kind: 'external', href, children }];
@@ -137,4 +137,12 @@ const ENTITIES: Record<string, string> = {
 
 function text(value: string): MdInline {
   return { kind: 'text', text: value.replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m]!) };
+}
+
+/** Texto plano de una lista de nodos (la etiqueta de una mención de rasgo). */
+function plainText(nodes: MdInline[]): string {
+  return nodes
+    .map((n) => ('text' in n ? n.text : 'children' in n ? plainText(n.children) : ''))
+    .join('')
+    .trim();
 }
