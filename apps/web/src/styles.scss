@@ -1,0 +1,22 @@
+:root {
+  --color-bg: #0f0b0c;
+  --color-surface: #1b1416;
+  --color-text: #eee5e6;
+  --color-muted: #a8999b;
+  --color-accent: #9e1b2b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+}
