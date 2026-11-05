@@ -29,6 +29,7 @@ model User {
   masterOf      Room[]
   memberships   RoomMember[]
   controlled    RoomCharacter[]
+  rolls         DiceRoll[]
 }
 
 /// Refresh token rotado. Solo se guarda el hash SHA-256 del valor que recibe el cliente.
@@ -102,6 +103,7 @@ model Room {
   updatedAt       DateTime        @updatedAt
   members         RoomMember[]
   characters      RoomCharacter[]
+  rolls           DiceRoll[]
 }
 
 model RoomMember {
@@ -133,4 +135,23 @@ model RoomCharacter {
 
   @@unique([roomId, characterId])
   @@index([characterId])
+}
+
+/// Tirada de dados hecha en el servidor. Inmutable: no hay endpoints para editarla ni borrarla.
+/// `characterName` y `visibility` se copian al tirar para que el historial no cambie después.
+model DiceRoll {
+  id              String   @id @default(uuid()) @db.Uuid
+  roomId          String   @db.Uuid
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomCharacterId String?  @db.Uuid
+  characterName   String?
+  label           String
+  pool            Json
+  result          Json
+  visibility      String
+  createdAt       DateTime @default(now())
+
+  @@index([roomId, createdAt(sort: Desc), id(sort: Desc)])
 }

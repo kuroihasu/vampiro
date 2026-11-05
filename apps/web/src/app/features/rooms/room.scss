@@ -129,6 +129,41 @@
   margin-top: 3rem;
 }
 
+.state {
+  grid-column: 1 / -1;
+}
+
+.play {
+  margin-top: 3rem;
+}
+
+.play__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h2 {
+    margin: 0 0 1rem;
+  }
+}
+
+.live {
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.play__grid {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  gap: 1.5rem 2rem;
+  align-items: start;
+
+  @media (max-width: 44rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .side {
   display: grid;
   gap: 1.5rem;

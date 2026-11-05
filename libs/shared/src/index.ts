@@ -17,6 +17,8 @@ export type { RoomConfig, DisciplineRule } from './types/room-config.js';
 export * from './types/parse-room-config.js';
 export type * from './types/room.js';
 export { ROOM_NAME_MAX_LENGTH } from './types/room.js';
+export type * from './types/realtime.js';
+export { MAX_DICE, HEALTH_LEVELS, ROOMS_NAMESPACE } from './types/realtime.js';
 
 export * from './errors/codes.js';
 export type * from './errors/violation.js';
@@ -28,3 +30,4 @@ export * from './engine/traits.js';
 export * from './engine/evaluate-sheet.js';
 export * from './engine/dice-pool.js';
 export * from './engine/derived.js';
+export * from './engine/resolve-roll.js';

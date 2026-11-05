@@ -17,6 +17,8 @@ export interface TestAppOptions {
    * funcionales no choquen con él; la prueba del 429 pasa el límite real.
    */
   authThrottleLimit?: number;
+  /** Escucha en un puerto libre (necesario para los tests del WebSocket). */
+  listen?: boolean;
 }
 
 /** Levanta la app completa (misma configuración que main.ts) contra la base de tests. */
@@ -27,13 +29,14 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<TestA
     .compile();
   const app = moduleRef.createNestApplication<INestApplication<App>>();
   setupApp(app);
-  await app.init();
+  if (options.listen) await app.listen(0);
+  else await app.init();
   return { app, prisma: app.get(PrismaService) };
 }
 
 /** Vacía las tablas entre pruebas. */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "RoomCharacter", "RoomMember", "Room", "Character", "RefreshToken", "User", "WikiArticle" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "DiceRoll", "RoomCharacter", "RoomMember", "Room", "Character", "RefreshToken", "User", "WikiArticle" RESTART IDENTITY CASCADE',
   );
 }

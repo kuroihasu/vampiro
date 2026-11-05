@@ -2,6 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import type {
   CreateRoomRequest,
+  DicePool,
+  DiceRollRecord,
+  RollRequest,
+  RoomDicePoolRequest,
+  UpdateCharacterStateRequest,
   LinkCharacterRequest,
   RoomCharacterInfo,
   RoomConfig,
@@ -53,6 +58,22 @@ export class RoomsApi {
     body: UpdateRoomCharacterRequest,
   ): Observable<RoomCharacterInfo> {
     return this.http.patch<RoomCharacterInfo>(`${URL}/${roomId}/characters/${linkId}`, body);
+  }
+
+  updateState(
+    roomId: string,
+    linkId: string,
+    body: UpdateCharacterStateRequest,
+  ): Observable<RoomCharacterInfo> {
+    return this.http.patch<RoomCharacterInfo>(`${URL}/${roomId}/characters/${linkId}/state`, body);
+  }
+
+  dicePool(roomId: string, body: RoomDicePoolRequest): Observable<DicePool> {
+    return this.http.post<DicePool>(`${URL}/${roomId}/dice-pool`, body);
+  }
+
+  roll(roomId: string, body: RollRequest): Observable<DiceRollRecord> {
+    return this.http.post<DiceRollRecord>(`${URL}/${roomId}/rolls`, body);
   }
 
   unlinkCharacter(roomId: string, linkId: string): Observable<void> {

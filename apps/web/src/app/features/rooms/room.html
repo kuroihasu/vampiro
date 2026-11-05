@@ -70,6 +70,12 @@
                   </button>
                 }
               </div>
+              <app-character-state
+                class="state"
+                [character]="c"
+                [editable]="canEditState(c)"
+                (change)="updateState(c, $event)"
+              />
               @if (openViolations() === c.id) {
                 <ul class="violations" [id]="'viol-' + c.id">
                   @for (v of c.violations; track v.code + v.path) {
@@ -122,6 +128,41 @@
           }
         </form>
       </section>
+
+      @if (ruleset.hasValue() && session.user(); as me) {
+        <section class="play" aria-labelledby="dice-title">
+          <div class="play__head">
+            <h2 id="dice-title">Tiradas</h2>
+            <span class="live muted" role="status">
+              @switch (socket.status()) {
+                @case ('connected') {
+                  En directo
+                }
+                @case ('reconnecting') {
+                  Reconectando…
+                }
+                @default {
+                  Sin conexión en directo
+                }
+              }
+            </span>
+          </div>
+          <div class="play__grid">
+            <app-dice-panel
+              [room]="r"
+              [ruleset]="ruleset.value()"
+              [userId]="me.id"
+              (rolled)="rolled($event)"
+            />
+            <app-roll-history
+              [rolls]="history.items()"
+              [hasMore]="history.hasMore()"
+              [loading]="history.loading()"
+              (more)="history.loadMore()"
+            />
+          </div>
+        </section>
+      }
 
       @if (isMaster() && ruleset.hasValue()) {
         <section aria-labelledby="config-title" class="master">
