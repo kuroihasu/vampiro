@@ -1,0 +1,60 @@
+<section class="auth">
+  <h1>Crear cuenta</h1>
+  <p class="muted">Solo necesitas un email. El nombre es el que verá tu grupo en las salas.</p>
+
+  @if (serverError(); as message) {
+    <p class="alert" role="alert">{{ message }}</p>
+  }
+
+  <form novalidate (submit)="onSubmit($event)">
+    <div class="field">
+      <label for="reg-name">Nombre</label>
+      <input
+        id="reg-name"
+        type="text"
+        autocomplete="nickname"
+        [formField]="registerForm.displayName"
+        [attr.aria-invalid]="
+          registerForm.displayName().touched() && registerForm.displayName().invalid()
+        "
+        aria-describedby="reg-name-error"
+      />
+      <app-field-errors id="reg-name-error" [field]="registerForm.displayName()" />
+    </div>
+
+    <div class="field">
+      <label for="reg-email">Email</label>
+      <input
+        id="reg-email"
+        type="email"
+        autocomplete="email"
+        [formField]="registerForm.email"
+        [attr.aria-invalid]="registerForm.email().touched() && registerForm.email().invalid()"
+        aria-describedby="reg-email-error"
+      />
+      <app-field-errors id="reg-email-error" [field]="registerForm.email()" />
+    </div>
+
+    <div class="field">
+      <label for="reg-password">Contraseña</label>
+      <input
+        id="reg-password"
+        type="password"
+        autocomplete="new-password"
+        [formField]="registerForm.password"
+        [attr.aria-invalid]="registerForm.password().touched() && registerForm.password().invalid()"
+        aria-describedby="reg-password-hint reg-password-error"
+      />
+      <span id="reg-password-hint" class="field__hint"
+        >Al menos {{ passwordMin }} caracteres. Una frase larga es más fácil de recordar.</span
+      >
+      <app-field-errors id="reg-password-error" [field]="registerForm.password()" />
+    </div>
+
+    <button type="submit" class="button" [disabled]="registerForm().submitting()">
+      {{ registerForm().submitting() ? 'Creando la cuenta…' : 'Crear cuenta' }}
+    </button>
+  </form>
+
+  <p class="switch">¿Ya tienes cuenta? <a routerLink="/entrar">Entra</a>.</p>
+</section>

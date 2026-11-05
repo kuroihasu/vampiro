@@ -1,25 +1,26 @@
-import { Test, type TestingModule } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { AppModule } from './../src/app.module.js';
-import { setupApp } from './../src/setup-app.js';
+import { createTestApp } from './utils/test-app.js';
 
 describe('API (e2e)', () => {
   let app: INestApplication<App>;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
+  });
 
-    app = moduleFixture.createNestApplication();
-    setupApp(app);
-    await app.init();
+  afterAll(async () => {
+    await app.close();
   });
 
   it('GET /api/v1/health', () => {
     return request(app.getHttpServer()).get('/api/v1/health').expect(200, { status: 'ok' });
+  });
+
+  it('envía cabeceras de seguridad (helmet)', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/health').expect(200);
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
   });
 
   it('GET /api/v1/rulesets/v20', async () => {
@@ -41,9 +42,5 @@ describe('API (e2e)', () => {
     const res = await request(app.getHttpServer()).get('/api/v1/ruta-inexistente').expect(404);
     expect(res.body).toMatchObject({ statusCode: 404, code: 'NO_ENCONTRADO' });
     expect(typeof res.body.timestamp).toBe('string');
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

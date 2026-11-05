@@ -8,10 +8,14 @@ out-tsc/
 coverage/
 *.tsbuildinfo
 
+# Cliente de Prisma generado
+apps/api/src/generated/
+
 # Entorno
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # Editor / SO
 .vscode/*

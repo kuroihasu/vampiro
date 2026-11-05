@@ -10,6 +10,10 @@
   "scripts": {
     "build": "pnpm -r --workspace-concurrency=1 build",
     "build:shared": "pnpm --filter @vampiro/shared build",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @vampiro/api db:migrate",
+    "db:seed": "pnpm --filter @vampiro/api db:seed",
     "dev:shared": "pnpm --filter @vampiro/shared dev",
     "dev:api": "pnpm --filter @vampiro/api start:dev",
     "dev:web": "pnpm --filter @vampiro/web start",

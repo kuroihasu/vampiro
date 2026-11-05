@@ -4,6 +4,8 @@ export type * from './types/trait.js';
 export type * from './types/ruleset.js';
 export type * from './types/character.js';
 export type * from './types/dice.js';
+export * from './types/auth.js';
+export * from './types/wiki.js';
 export { emptySheet } from './types/character.js';
 export { DEFAULT_ROOM_CONFIG } from './types/room-config.js';
 export type { RoomConfig, DisciplineRule } from './types/room-config.js';

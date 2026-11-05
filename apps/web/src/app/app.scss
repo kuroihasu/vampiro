@@ -1,34 +1,72 @@
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--parchment);
+  color: var(--ink);
+  z-index: 10;
+
+  &:focus {
+    top: 0.5rem;
+  }
+}
+
 .topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  border-bottom: 2px solid var(--color-accent);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 2rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem) 0.75rem;
+  border-bottom: 1px solid var(--rule);
 }
 
 .brand {
-  font-weight: 700;
+  font-family: var(--font-blackletter);
+  font-size: 2rem;
+  line-height: 1;
   text-decoration: none;
+  color: var(--parchment);
 }
 
 nav {
   display: flex;
+  gap: 1.5rem;
+}
+
+nav a,
+.account a {
+  text-decoration: none;
+  color: var(--ash);
+  padding-block: 0.25rem;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: var(--parchment);
+  }
+
+  &.active {
+    color: var(--parchment);
+    border-bottom-color: var(--oxblood);
+  }
+}
+
+.account {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
   gap: 1rem;
 }
 
-nav a {
-  text-decoration: none;
-  color: var(--color-muted);
-}
-
-nav a.active {
-  color: var(--color-text);
+.account__name {
+  color: var(--ash);
+  font-style: italic;
 }
 
 main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) 4rem;
+
+  &:focus {
+    outline: none;
+  }
 }

@@ -1,6 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { Public } from '../../common/auth/public.decorator.js';
 import { RulesService } from './rules.service.js';
 
+/** Rulesets públicos: los usan la wiki y los tooltips sin sesión. */
+@Public()
 @Controller()
 export class RulesController {
   constructor(private readonly rules: RulesService) {}

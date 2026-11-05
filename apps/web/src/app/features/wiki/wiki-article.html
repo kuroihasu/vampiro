@@ -1,0 +1,31 @@
+<p class="back"><a routerLink="/wiki">Volver a la wiki</a></p>
+
+@if (notFound()) {
+  <h1>Este artículo no existe</h1>
+  <p class="muted">Puede que el enlace esté mal escrito. Búscalo desde el índice de la wiki.</p>
+} @else if (errorText(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+} @else if (article.hasValue()) {
+  @let a = article.value();
+  <article class="article">
+    <header>
+      @if (categoryName(); as name) {
+        <a class="category" routerLink="/wiki" [queryParams]="{ categoria: a.category }">{{
+          name
+        }}</a>
+      }
+      <h1>{{ a.title }}</h1>
+      <p class="meta muted">
+        Ediciones: {{ a.editions.join(', ').toUpperCase() }}
+        @if (a.traitKey) {
+          <br />
+          Rasgo de la ficha:
+          <button type="button" class="trait" [traitTooltip]="a.traitKey">{{ a.title }}</button>
+        }
+      </p>
+    </header>
+    <app-markdown [source]="a.bodyMarkdown" />
+  </article>
+} @else {
+  <p class="muted">Cargando artículo…</p>
+}

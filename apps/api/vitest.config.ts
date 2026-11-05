@@ -8,5 +8,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // class-transformer y los decoradores de Nest necesitan la API de metadatos.
+    setupFiles: ['reflect-metadata'],
   },
 });
