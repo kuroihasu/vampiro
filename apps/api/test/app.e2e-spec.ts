@@ -33,8 +33,8 @@ describe('API (e2e)', () => {
     expect(res.body.code).toBe('NO_ENCONTRADO');
   });
 
-  it('GET /api/v1/rulesets/v5 responde EDICION_NO_DISPONIBLE', async () => {
-    const res = await request(app.getHttpServer()).get('/api/v1/rulesets/v5').expect(404);
+  it('GET /api/v1/rulesets/revised responde EDICION_NO_DISPONIBLE', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/rulesets/revised').expect(404);
     expect(res.body.code).toBe('EDICION_NO_DISPONIBLE');
   });
 

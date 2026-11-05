@@ -108,6 +108,12 @@ export class CharacterStateDto implements UpdateCharacterStateRequest {
   blood?: number;
 
   @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  hunger?: number;
+
+  @IsOptional()
   @IsString()
   @MaxLength(500)
   notes?: string;

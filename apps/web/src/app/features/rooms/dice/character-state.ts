@@ -10,7 +10,7 @@ import { type CharacterState, HEALTH_LEVELS, type RoomCharacterInfo } from '@vam
   template: `
     <div class="state">
       <div class="health" role="group" [attr.aria-label]="'Salud de ' + character().name">
-        @for (level of levels; track level; let i = $index) {
+        @for (level of levels(); track $index; let i = $index) {
           <button
             type="button"
             class="box"
@@ -22,7 +22,7 @@ import { type CharacterState, HEALTH_LEVELS, type RoomCharacterInfo } from '@vam
             (click)="setDamage(i)"
           ></button>
         }
-        <span class="caption">{{ damage() ? levels[damage() - 1] : 'Ileso' }}</span>
+        <span class="caption">{{ damage() ? levels()[damage() - 1] : 'Ileso' }}</span>
       </div>
       <div class="meter">
         <span class="name">Voluntad</span>
@@ -50,32 +50,61 @@ import { type CharacterState, HEALTH_LEVELS, type RoomCharacterInfo } from '@vam
           </button>
         }
       </div>
-      <div class="meter">
-        <span class="name">Sangre</span>
-        @if (editable()) {
-          <button
-            type="button"
-            class="step"
-            [disabled]="blood() <= 0"
-            aria-label="Gastar un punto de sangre"
-            (click)="setBlood(blood() - 1)"
-          >
-            −
-          </button>
-        }
-        <span class="value">{{ blood() }} / {{ bloodMax() }}</span>
-        @if (editable()) {
-          <button
-            type="button"
-            class="step"
-            [disabled]="blood() >= bloodMax()"
-            aria-label="Ganar un punto de sangre"
-            (click)="setBlood(blood() + 1)"
-          >
-            +
-          </button>
-        }
-      </div>
+      @if (hungerMax() !== undefined) {
+        <div class="meter">
+          <span class="name">Hambre</span>
+          @if (editable()) {
+            <button
+              type="button"
+              class="step"
+              [disabled]="hunger() <= 0"
+              aria-label="Bajar el Hambre"
+              (click)="setHunger(hunger() - 1)"
+            >
+              −
+            </button>
+          }
+          <span class="value">{{ hunger() }} / {{ hungerMax() }}</span>
+          @if (editable()) {
+            <button
+              type="button"
+              class="step"
+              [disabled]="hunger() >= (hungerMax() ?? 0)"
+              aria-label="Subir el Hambre"
+              (click)="setHunger(hunger() + 1)"
+            >
+              +
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="meter">
+          <span class="name">Sangre</span>
+          @if (editable()) {
+            <button
+              type="button"
+              class="step"
+              [disabled]="blood() <= 0"
+              aria-label="Gastar un punto de sangre"
+              (click)="setBlood(blood() - 1)"
+            >
+              −
+            </button>
+          }
+          <span class="value">{{ blood() }} / {{ bloodMax() }}</span>
+          @if (editable()) {
+            <button
+              type="button"
+              class="step"
+              [disabled]="blood() >= bloodMax()"
+              aria-label="Ganar un punto de sangre"
+              (click)="setBlood(blood() + 1)"
+            >
+              +
+            </button>
+          }
+        </div>
+      }
     </div>
   `,
   styleUrl: './character-state.scss',
@@ -85,7 +114,16 @@ export class CharacterStateView {
   readonly editable = input(false);
   readonly change = output<Partial<CharacterState>>();
 
-  protected readonly levels = HEALTH_LEVELS;
+  /** V20: 7 niveles con nombre; V5: tantas casillas como su Salud. */
+  protected readonly levels = computed<readonly string[]>(() => {
+    const health = this.character().derived?.health;
+    return health === undefined
+      ? HEALTH_LEVELS
+      : Array.from({ length: health }, (_, i) => `Daño ${i + 1} de ${health}`);
+  });
+  protected readonly hungerMax = computed(() => this.character().derived?.hungerMax);
+  /** En V5 se empieza la partida con Hambre 1. */
+  protected readonly hunger = computed(() => this.character().state.hunger ?? 1);
   protected readonly damage = computed(() => this.character().state.damage ?? 0);
   protected readonly willpowerMax = computed(() => this.character().derived?.willpower ?? 0);
   protected readonly willpower = computed(
@@ -104,6 +142,10 @@ export class CharacterStateView {
   protected spendWillpower(amount: number): void {
     const spent = (this.character().state.willpowerSpent ?? 0) + amount;
     this.change.emit({ willpowerSpent: Math.max(0, Math.min(this.willpowerMax(), spent)) });
+  }
+
+  protected setHunger(value: number): void {
+    this.change.emit({ hunger: Math.max(0, Math.min(this.hungerMax() ?? 0, value)) });
   }
 
   protected setBlood(value: number): void {

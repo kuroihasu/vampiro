@@ -55,7 +55,10 @@ export class CharacterEditor {
   protected readonly store = inject(EditorStore);
   private readonly rules = inject(RulesService);
 
-  protected readonly steps = STEPS;
+  /** Pasos según la edición: sin puntos gratuitos (V5) no hay paso de gratuitos. */
+  protected readonly steps = computed(() =>
+    STEPS.filter((s) => s.id !== 'gratuitos' || !!this.store.ruleset()?.freebies),
+  );
   protected readonly step = signal<(typeof STEPS)[number]['id']>('concepto');
   protected readonly priorityNames = PRIORITY_NAMES;
 
@@ -95,21 +98,72 @@ export class CharacterEditor {
     return this.store.ruleset()?.clans.find((c) => c.key === key);
   });
 
-  /** Grupos de una categoría repartida por prioridades, con sus rasgos. */
+  /**
+   * Grupos de una categoría con sus rasgos. Con prioridades (V20) cada grupo lleva su
+   * selector y su contador; con patrón (V5) el contador es de toda la categoría.
+   */
   protected groupsOf(category: 'attribute' | 'ability') {
     const ruleset = this.store.ruleset();
-    const budget = ruleset?.creation.priorities.find((b) => b.category === category);
-    if (!ruleset || !budget) return [];
-    return budget.groups.map((group) => ({
+    if (!ruleset) return [];
+    const budget = ruleset.creation.priorities.find((b) => b.category === category);
+    const pattern = this.patternOf(category);
+    const groups = budget?.groups ?? [
+      ...new Set(ruleset.catalog.filter((t) => t.category === category).map((t) => t.group ?? '')),
+    ];
+    return groups.map((group) => ({
       group,
-      label: budget.groupLabels[group] ?? group,
-      path: `${category}.${group}`,
-      points: budget.points,
+      label: budget?.groupLabels[group] ?? pattern?.groupLabels?.[group] ?? group,
+      path: budget ? `${category}.${group}` : '',
+      points: budget?.points ?? [],
       priority: this.store.sheet().priorities[category]?.[group],
       traits: ruleset.catalog
         .filter((t) => t.category === category && t.group === group)
         .map((t) => t.key),
     }));
+  }
+
+  protected patternOf(category: 'attribute' | 'ability' | 'discipline') {
+    return this.store.ruleset()?.creation.patterns?.find((p) => p.category === category);
+  }
+
+  protected readonly attributePattern = computed(() => this.patternOf('attribute'));
+  protected readonly skillPattern = computed(() => this.patternOf('ability'));
+  protected readonly disciplinePattern = computed(() => this.patternOf('discipline'));
+
+  /** Mensaje (error o aviso) de un presupuesto, para mostrarlo junto a su sección. */
+  protected budgetMessage(path: string): string | undefined {
+    return (
+      this.store.violationsFor(path)[0]?.message ??
+      this.store.warnings().find((w) => w.path === path)?.message
+    );
+  }
+
+  protected setPatternChoice(key: string, event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value) this.store.setPatternChoice(key, value);
+  }
+
+  // Especialidades (V5)
+  protected readonly specialtySkill = signal('');
+  protected readonly specialtyName = signal('');
+  protected readonly skillsWithDots = computed(() =>
+    this.keysOf('ability').filter((k) => this.store.total(k) > 0),
+  );
+  protected readonly specialtyBlocked = computed(() =>
+    this.specialtySkill()
+      ? this.store.specialtyReason(this.specialtySkill(), this.specialtyName())
+      : 'Elige una habilidad.',
+  );
+
+  protected addSpecialty(event: Event): void {
+    event.preventDefault();
+    if (this.specialtyBlocked()) return;
+    this.store.addSpecialty(this.specialtySkill(), this.specialtyName());
+    this.specialtyName.set('');
+  }
+
+  protected inputValue(event: Event): string {
+    return (event.target as HTMLInputElement | HTMLSelectElement).value;
   }
 
   protected readonly attributeGroups = computed(() => this.groupsOf('attribute'));
@@ -132,9 +186,11 @@ export class CharacterEditor {
       ...ruleset.creation.priorities.flatMap((b) =>
         b.groups.map((g) => ({ path: `${b.category}.${g}`, label: b.groupLabels[g] ?? g })),
       ),
+      ...(ruleset.creation.patterns ?? []).map((p) => ({ path: p.key, label: p.label })),
       ...ruleset.creation.fixed.map((b) => ({ path: b.category, label: b.label })),
+      ...(ruleset.specialties ? [{ path: 'specialties', label: 'Especialidades' }] : []),
       ...(ruleset.meritsFlaws ? [{ path: 'flaws', label: 'Puntos de defectos' }] : []),
-      { path: 'freebies', label: 'Puntos gratuitos' },
+      ...(ruleset.freebies ? [{ path: 'freebies', label: 'Puntos gratuitos' }] : []),
     ];
     return items.map((i) => ({ ...i, budget: this.store.budget(i.path) }));
   });

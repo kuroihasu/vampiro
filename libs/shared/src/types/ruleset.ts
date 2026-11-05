@@ -34,6 +34,31 @@ export interface FixedBudget {
   clanOnly?: boolean;
 }
 
+/**
+ * Presupuesto por patrón de puntos (V5): los valores de los rasgos de la categoría tienen
+ * que coincidir con uno de los patrones, p. ej. atributos 4/3/3/3/2/2/2/2/1.
+ */
+export interface PatternBudget {
+  /** Clave del presupuesto (path de sus violaciones y del contador). */
+  key: string;
+  label: string;
+  category: 'attribute' | 'ability' | 'discipline';
+  /** Distribuciones posibles; si hay varias, la ficha elige una en patternChoices[key]. */
+  options: { id: string; label: string; values: number[] }[];
+  /** Solo disciplinas del clan. */
+  clanOnly?: boolean;
+  /** Nombre visible de los grupos de la categoría (para el editor). */
+  groupLabels?: Record<string, string>;
+}
+
+/** Especialidades (V5): gratis en ciertas habilidades más algunas extra. */
+export interface SpecialtyRules {
+  /** Habilidades que, si tienen puntos, exigen una especialidad gratuita. */
+  freeFor: string[];
+  /** Especialidades adicionales permitidas. */
+  extra: number;
+}
+
 export interface FreebieRules {
   total: number;
   /** Coste por punto según categoría. */
@@ -44,18 +69,31 @@ export interface FreebieRules {
 
 /** Rasgos que no se reparten directamente sino que se calculan a partir de otros. */
 export interface DerivedRules {
-  /** Humanidad = suma de estas virtudes + gratuitos en `traitKey`. */
-  humanity: { from: string[]; traitKey: string; max: number };
+  /** Humanidad = base + suma de estos rasgos + gratuitos en `traitKey`. */
+  humanity: { from: string[]; base?: number; traitKey: string; max: number };
   /** Fuerza de Voluntad = suma de estas virtudes + gratuitos en `traitKey`. */
   willpower: { from: string[]; traitKey: string; max: number };
   /** Generación = base − puntos del trasfondo (sin bajar de `min`). */
-  generation: { base: number; min: number; backgroundKey: string };
-  /** Reserva de sangre por generación. */
-  bloodPool: Record<number, { max: number; perTurn: number }>;
+  generation: { base: number; min: number; backgroundKey?: string };
+  /** Reserva de sangre por generación (V20). */
+  bloodPool?: Record<number, { max: number; perTurn: number }>;
+  /** Niveles de salud = suma de estos rasgos + bonus (V5). Sin él, 7 niveles fijos. */
+  health?: { from: string[]; bonus: number };
+  /** Potencia de sangre inicial (V5). */
+  bloodPotency?: { base: number };
+  /** Hambre máxima (V5). */
+  hunger?: { max: number };
 }
 
 export interface MeritsFlawsRules {
   maxFlawPoints: number;
+  /** Puntos de defectos obligatorios al completar la ficha (V5: 2). */
+  requiredFlawPoints?: number;
+  /**
+   * Presupuesto fijo del que salen los méritos (V5: las ventajas). Sin él, los méritos
+   * se pagan con puntos gratuitos y los defectos los devuelven (V20).
+   */
+  meritsBudget?: FixedBudget['category'];
 }
 
 export type DiceSystem =
@@ -80,7 +118,9 @@ export interface Ruleset {
   creation: {
     priorities: PriorityBudget[];
     fixed: FixedBudget[];
+    patterns?: PatternBudget[];
   };
+  specialties?: SpecialtyRules;
   freebies?: FreebieRules;
   meritsFlaws?: MeritsFlawsRules;
   derived?: DerivedRules;

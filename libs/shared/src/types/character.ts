@@ -5,6 +5,11 @@ export type CharacterStatus = 'draft' | 'complete';
 /** Prioridad elegida para un grupo: 0 = primaria, 1 = secundaria, 2 = terciaria. */
 export type PriorityChoice = Record<string, number>;
 
+export interface Specialty {
+  skill: string;
+  name: string;
+}
+
 export interface FreebiePurchase {
   traitKey: string;
   /** Puntos comprados. */
@@ -25,6 +30,10 @@ export interface CharacterSheet {
   freebies: FreebiePurchase[];
   /** Claves de los méritos y defectos elegidos (se pagan o devuelven puntos gratuitos). */
   meritsFlaws?: string[];
+  /** Distribución elegida en los presupuestos por patrón (V5), p. ej. { skills: 'equilibrada' }. */
+  patternChoices?: Record<string, string>;
+  /** Especialidades de habilidad (V5). */
+  specialties?: Specialty[];
 }
 
 export interface Character {

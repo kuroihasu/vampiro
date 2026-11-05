@@ -6,7 +6,15 @@ export type ParseSheetResult =
 const KEY = /^[a-z0-9-]{1,40}$/;
 const MAX_ENTRIES = 300;
 const PRIORITY_CATEGORIES = ['attribute', 'ability'] as const;
-const SHEET_FIELDS = new Set(['clan', 'priorities', 'traits', 'freebies', 'meritsFlaws']);
+const SHEET_FIELDS = new Set([
+  'clan',
+  'priorities',
+  'traits',
+  'freebies',
+  'meritsFlaws',
+  'patternChoices',
+  'specialties',
+]);
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -72,6 +80,39 @@ export function parseCharacterSheet(value: unknown): ParseSheetResult {
       errors.push('meritsFlaws debe ser una lista (máximo 60)');
     } else if (!meritsFlaws.every((k) => typeof k === 'string' && KEY.test(k))) {
       errors.push('meritsFlaws contiene una clave inválida');
+    }
+  }
+
+  const choices = value['patternChoices'];
+  if (choices !== undefined) {
+    if (!isObject(choices) || Object.keys(choices).length > 10) {
+      errors.push('patternChoices debe ser un objeto');
+    } else if (
+      !Object.entries(choices).every(
+        ([k, v]) => KEY.test(k) && typeof v === 'string' && KEY.test(v),
+      )
+    ) {
+      errors.push('patternChoices contiene claves o valores inválidos');
+    }
+  }
+
+  const specialties = value['specialties'];
+  if (specialties !== undefined) {
+    if (!Array.isArray(specialties) || specialties.length > 30) {
+      errors.push('specialties debe ser una lista (máximo 30)');
+    } else {
+      specialties.forEach((item: unknown, i) => {
+        const valid =
+          isObject(item) &&
+          typeof item['skill'] === 'string' &&
+          KEY.test(item['skill']) &&
+          typeof item['name'] === 'string' &&
+          item['name'].trim().length > 0 &&
+          item['name'].length <= 40 &&
+          Object.keys(item).every((k) => k === 'skill' || k === 'name');
+        if (!valid)
+          errors.push(`specialties[${i}] debe tener skill y un nombre de hasta 40 caracteres`);
+      });
     }
   }
 

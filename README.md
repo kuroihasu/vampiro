@@ -21,6 +21,10 @@ interpreta un **motor puro** (`libs/shared/src/engine`). El front lo usa para ca
 puntos en vivo y bloquear lo que no se puede, explicando el motivo; la API lo vuelve a
 ejecutar y tiene la última palabra.
 
+El motor admite dos formas de reparto al crear: por **prioridades** (V20: 7/5/3 por grupo) y
+por **patrón** (V5: los valores tienen que coincidir con 4/3/3/3/2/2/2/2/1 o con la
+distribución de habilidades elegida). Cada edición declara la suya en su ruleset.
+
 ### apps/api
 
 | Carpeta                  | Contenido                                                                                                                                                                                                                      |
@@ -150,7 +154,11 @@ pruebas; nunca tocan la base de desarrollo.
 - Fase 3: salas con invitación, configuración del master y validez de las fichas en la sala.
 - Fase 4: tiradas en el servidor, historial en vivo por WebSocket y estado en partida.
 - Fase 5: méritos y defectos de V20 en la ficha y gestión de la wiki para administradores.
+- Fase 6: V5 completa (creación por patrones, distribuciones, especialidades, ventajas, Hambre y tiradas con críticos).
 
-Solo el ruleset de V20 está cargado y es parcial; sus números deben revisarse contra el manual.
+Están cargados los rulesets de V20 y V5. Los dos son parciales y sus números deben revisarse
+contra los manuales; en V5 conviene revisar los patrones de creación, las ventajas, los
+defectos obligatorios, las especialidades y los costes. De V5 faltan los tipos de depredador,
+las generaciones distintas de neonato y la alquimia de sangre débil.
 Los costes de méritos y defectos de V20 son orientativos y también conviene revisarlos.
 Los textos de rasgos y de la wiki son resúmenes propios.

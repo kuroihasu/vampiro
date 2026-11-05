@@ -32,6 +32,8 @@ export interface RoomDicePoolRequest {
   difficulty?: number;
   /** Tirada libre: número de dados. */
   dice?: number;
+  /** V5, tirada libre: dados de Hambre. Con personaje se usa su Hambre en la sala. */
+  hunger?: number;
 }
 
 export interface RollRequest extends RoomDicePoolRequest {

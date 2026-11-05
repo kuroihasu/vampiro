@@ -15,7 +15,7 @@ export interface EditionInfo {
 
 export const EDITIONS: readonly EditionInfo[] = [
   { id: 'v20', name: 'Vampiro: la Mascarada 20º Aniversario (V20)', available: true },
-  { id: 'v5', name: 'Vampiro: la Mascarada 5ª Edición (V5)', available: false },
+  { id: 'v5', name: 'Vampiro: la Mascarada 5ª Edición (V5)', available: true },
   { id: 'dark-ages', name: 'Vampiro: Edad Oscura', available: false },
   { id: 'revised', name: 'Vampiro: la Mascarada Revisada', available: false },
 ];

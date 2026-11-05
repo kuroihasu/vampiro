@@ -65,6 +65,18 @@
       </div>
     }
   } @else {
+    @if (usesHunger()) {
+      <div class="field">
+        <label for="dp-hunger">Hambre</label>
+        <input
+          id="dp-hunger"
+          type="number"
+          inputmode="numeric"
+          [value]="hunger()"
+          (change)="hunger.set(number($event, 0))"
+        />
+      </div>
+    }
     <div class="field">
       <label for="dp-dice">Dados</label>
       <input
@@ -110,6 +122,9 @@
         {{ p.dice === 1 ? 'dado' : 'dados' }}
         @if (p.difficulty) {
           a dificultad {{ p.difficulty }}
+        }
+        @if (p.hungerDice) {
+          ({{ p.hungerDice }} de Hambre)
         }
       </p>
       <p class="breakdown muted">
