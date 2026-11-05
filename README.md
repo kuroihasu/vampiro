@@ -23,16 +23,17 @@ ejecutar y tiene la última palabra.
 
 ### apps/api
 
-| Carpeta              | Contenido                                                                               |
-| -------------------- | --------------------------------------------------------------------------------------- |
-| `prisma/`            | Esquema, migraciones y seed de la wiki                                                  |
-| `src/config`         | Variables de entorno validadas al arrancar (`@nestjs/config`)                           |
-| `src/common`         | Filtro global de errores, `ApiException`, decoradores `@Public` y `@CurrentUser`        |
-| `src/modules/auth`   | `POST /auth/register`, `/login`, `/refresh`, `/logout`                                  |
-| `src/modules/users`  | `GET` y `PATCH /users/me`                                                               |
-| `src/modules/wiki`   | `GET /wiki/categories`, `/wiki/articles?categoria=&edicion=&q=`, `/wiki/articles/:slug` |
-| `src/modules/rules`  | `GET /editions`, `GET /rulesets/:edicion`, `GET /traits/:ed/:k`                         |
-| `src/modules/health` | `GET /health`                                                                           |
+| Carpeta                  | Contenido                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `prisma/`                | Esquema, migraciones y seed de la wiki                                                                                          |
+| `src/config`             | Variables de entorno validadas al arrancar (`@nestjs/config`)                                                                   |
+| `src/common`             | Filtro global de errores, `ApiException`, decoradores `@Public` y `@CurrentUser`                                                |
+| `src/modules/auth`       | `POST /auth/register`, `/login`, `/refresh`, `/logout`                                                                          |
+| `src/modules/users`      | `GET` y `PATCH /users/me`                                                                                                       |
+| `src/modules/wiki`       | `GET /wiki/categories`, `/wiki/articles?categoria=&edicion=&q=`, `/wiki/articles/:slug`                                         |
+| `src/modules/characters` | `GET /characters?edicion=`, `POST /characters`, `GET/PUT/DELETE /characters/:id`, `POST /characters/:id/evaluate` y `/complete` |
+| `src/modules/rules`      | `GET /editions`, `GET /rulesets/:edicion`, `GET /traits/:ed/:k`                                                                 |
+| `src/modules/health`     | `GET /health`                                                                                                                   |
 
 Todas las rutas exigen sesión salvo las marcadas con `@Public()` (auth, wiki, rules y health).
 
@@ -41,7 +42,12 @@ y refresh token opaco en una cookie `httpOnly` y `SameSite=Strict` limitada a `/
 El refresh se guarda como hash, se rota en cada uso y, si alguien reutiliza uno ya rotado,
 se revocan todas las sesiones de ese usuario. Login y registro tienen límite de intentos.
 
-Próximos módulos: `characters`, `rooms`, `dice`, `realtime`.
+**Fichas:** el `PUT` valida la forma de la ficha (400) y las reglas con `evaluateSheet` de
+`@vampiro/shared` (422 `RULE_VIOLATION` con la lista de violaciones). El cuerpo lleva el
+`updatedAt` que se editó: si otra pestaña guardó antes, responde 409 `CONFLICTO_VERSION`.
+La ficha de otro usuario responde 404, igual que una inexistente.
+
+Próximos módulos: `rooms`, `dice`, `realtime`.
 
 ### apps/web
 
@@ -52,6 +58,10 @@ Próximos módulos: `characters`, `rooms`, `dice`, `realtime`.
 | `src/app/features` | Áreas con lazy loading: `home`, `wiki`, `auth`, `characters`, `rooms`           |
 
 En desarrollo, `/api` se redirige a `http://localhost:3000` (`proxy.conf.json`).
+
+El editor de fichas (`/personajes/:id`) va por pasos y evalúa la ficha en vivo con el mismo
+motor que la API: los puntos que romperían una regla quedan deshabilitados y se explica el
+motivo junto al rasgo.
 
 En los artículos de la wiki, `[Celeridad](rasgo:celeridad)` se muestra como una mención con
 tooltip (resumen y niveles del rasgo, sacados del ruleset).
@@ -90,6 +100,10 @@ pnpm dev:web          # Web en http://localhost:4200
 pnpm dev:shared       # opcional: recompila @vampiro/shared al guardar
 ```
 
+Si cambias `libs/shared`, recompílalo (`pnpm build:shared` o `pnpm dev:shared`); la API en
+modo watch y `ng serve` recogen el cambio solos. `@vampiro/shared` está excluido del
+preempaquetado de Vite (`angular.json`), así que no hace falta borrar `.angular/cache`.
+
 ## Comandos
 
 ```bash
@@ -98,7 +112,7 @@ pnpm test             # tests unitarios de los tres paquetes
 pnpm test:e2e         # e2e de la API contra la base vampiro_test (necesita pnpm db:up)
 pnpm db:up            # arranca PostgreSQL
 pnpm db:down          # lo para (los datos se conservan en un volumen de Docker)
-pnpm db:migrate       # crea/aplica migraciones (prisma migrate dev)
+pnpm db:migrate       # crea/aplica migraciones y regenera el cliente de Prisma
 pnpm db:seed          # vuelve a cargar los artículos de ejemplo (idempotente)
 ```
 
@@ -107,6 +121,8 @@ pruebas; nunca tocan la base de desarrollo.
 
 ## Estado
 
-Fase 1: base, cuentas de usuario y wiki de solo lectura con tooltips. Solo el ruleset de V20
-está cargado y es parcial; sus números deben revisarse contra el manual. Los textos de rasgos
-y de la wiki son resúmenes propios.
+- Fase 1: base, cuentas de usuario y wiki de solo lectura con tooltips.
+- Fase 2: fichas de personaje V20 con editor por pasos y validación en cliente y servidor.
+
+Solo el ruleset de V20 está cargado y es parcial; sus números deben revisarse contra el manual.
+Los textos de rasgos y de la wiki son resúmenes propios.

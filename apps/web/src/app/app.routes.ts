@@ -34,6 +34,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/characters/characters').then((m) => m.Characters),
   },
   {
+    path: 'personajes/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/characters/editor/character-editor').then((m) => m.CharacterEditor),
+  },
+  {
     path: 'salas',
     title: 'Salas · Vampiro',
     canActivate: [authGuard],

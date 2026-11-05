@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptySheet, type CharacterSheet } from '../types/character.js';
 import { DEFAULT_ROOM_CONFIG } from '../types/room-config.js';
 import { V20_RULESET } from '../rulesets/v20.js';
-import { checkTraitChange, evaluateSheet } from './evaluate-sheet.js';
+import { checkSheetChange, checkTraitChange, evaluateSheet } from './evaluate-sheet.js';
 
 const codes = (sheet: CharacterSheet, mode: 'draft' | 'complete' = 'draft') =>
   evaluateSheet(sheet, V20_RULESET, { mode }).violations.map((v) => `${v.severity}:${v.code}`);
@@ -37,6 +37,18 @@ describe('evaluateSheet (V20)', () => {
       traits: { fuerza: 2, destreza: 2 },
     };
     expect(codes(sheet)).toContain('error:PRESUPUESTO_EXCEDIDO');
+  });
+
+  it('los mensajes usan el nombre visible del grupo', () => {
+    const sheet: CharacterSheet = {
+      ...emptySheet(),
+      priorities: { attribute: { physical: 2, social: 1, mental: 0 } },
+      traits: { fuerza: 2, destreza: 2 },
+    };
+    const message = evaluateSheet(sheet, V20_RULESET).violations.find(
+      (v) => v.code === 'PRESUPUESTO_EXCEDIDO',
+    )?.message;
+    expect(message).toBe('Has repartido 4 de 3 puntos en Físicos.');
   });
 
   it('rechaza una habilidad sobre 3 antes de gratuitos', () => {
@@ -161,10 +173,34 @@ describe('evaluateSheet (V20): configuración de sala', () => {
   });
 
   it('rechaza una generación fuera del rango de la sala', () => {
-    const sheet: CharacterSheet = { ...emptySheet(), generation: 8 };
+    // 5 puntos de Generación: 8ª generación.
+    const sheet: CharacterSheet = { ...emptySheet(), traits: { generacion: 5 } };
     const result = evaluateSheet(sheet, V20_RULESET, {
       roomConfig: { ...DEFAULT_ROOM_CONFIG, minGeneration: 10, maxGeneration: 13 },
     });
     expect(result.violations.map((v) => v.code)).toContain('REQUISITO_NO_CUMPLIDO');
+  });
+});
+
+describe('checkSheetChange (V20)', () => {
+  it('detecta que una compra con gratuitos excede el total', () => {
+    const sheet: CharacterSheet = {
+      ...emptySheet(),
+      clan: 'brujah',
+      freebies: [{ traitKey: 'celeridad', dots: 2 }],
+    };
+    const next: CharacterSheet = {
+      ...sheet,
+      freebies: [...sheet.freebies, { traitKey: 'recursos', dots: 2 }],
+    };
+    expect(checkSheetChange(sheet, next, V20_RULESET).map((v) => v.code)).toEqual([
+      'PRESUPUESTO_EXCEDIDO',
+    ]);
+  });
+
+  it('no repite errores que ya existían antes del cambio', () => {
+    const sheet: CharacterSheet = { ...emptySheet(), traits: { pelea: 4 } };
+    const next: CharacterSheet = { ...sheet, traits: { ...sheet.traits, fuerza: 1 } };
+    expect(checkSheetChange(sheet, next, V20_RULESET)).toEqual([]);
   });
 });

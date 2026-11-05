@@ -1,0 +1,225 @@
+.back {
+  margin: 0 0 1.5rem;
+
+  a {
+    color: var(--ash);
+  }
+}
+
+.head {
+  margin-bottom: 2rem;
+
+  h1 {
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+/* Pasos | panel | resumen. En pantallas estrechas se apilan. */
+.editor {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 40rem) minmax(15rem, 1fr);
+  gap: 2rem clamp(1.5rem, 3vw, 3rem);
+  align-items: start;
+
+  @media (max-width: 70rem) {
+    grid-template-columns: 11rem minmax(0, 1fr);
+
+    .summary {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 44rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Los pasos sí son una secuencia: se numeran. */
+.steps ol {
+  margin: 0;
+  padding: 0 0 0 1.5rem;
+  border-left: 1px solid var(--rule);
+
+  li::marker {
+    color: var(--ash);
+    font-variant-numeric: tabular-nums;
+  }
+
+  button {
+    background: none;
+    border: 0;
+    padding: 0.4rem 0.25rem;
+    color: var(--ash);
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+      color: var(--parchment);
+    }
+
+    &.current {
+      color: var(--parchment);
+      box-shadow: inset 0 -2px 0 var(--oxblood);
+    }
+  }
+
+  @media (max-width: 44rem) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    border-left: 0;
+    padding: 0 0 0 1.25rem;
+  }
+}
+
+.panel {
+  h2 {
+    margin-top: 0;
+  }
+
+  h3 {
+    margin: 2rem 0 0.25rem;
+    font-size: 1.125rem;
+  }
+}
+
+.lead {
+  margin: 0 0 1.5rem;
+}
+
+.group {
+  margin-bottom: 2rem;
+}
+
+.group__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.25rem;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.group__count {
+  color: var(--ash);
+  font-variant-numeric: tabular-nums;
+}
+
+.clans {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.clan {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+
+  input {
+    grid-row: span 3;
+    accent-color: var(--oxblood);
+    margin-top: 0.35rem;
+  }
+
+  &.selected {
+    border-color: var(--oxblood);
+    background: var(--vellum);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+}
+
+.clan__name {
+  font-weight: 600;
+}
+
+.clan__disciplines {
+  color: var(--parchment);
+  font-size: 0.9375rem;
+}
+
+.clan__weakness {
+  color: var(--ash);
+  font-size: 0.9375rem;
+  font-style: italic;
+}
+
+.summary {
+  position: sticky;
+  top: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--vellum);
+  border-top: 3px solid var(--oxblood);
+}
+
+.counters,
+.derived {
+  margin: 0 0 1rem;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.2rem 0;
+  }
+
+  dt {
+    color: var(--ash);
+  }
+
+  dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .over dd {
+    color: #f08a90;
+  }
+}
+
+.derived {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+
+.problems {
+  font-size: 0.9375rem;
+  color: #f08a90;
+
+  p {
+    margin: 0 0 0.25rem;
+  }
+
+  ul {
+    margin: 0 0 1rem;
+    padding-left: 1.1rem;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.unsaved {
+  font-size: 0.875rem;
+  font-style: italic;
+}

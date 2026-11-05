@@ -17,7 +17,6 @@ export interface FreebiePurchase {
  */
 export interface CharacterSheet {
   clan?: string;
-  generation?: number;
   /** Prioridades por categoría: { attribute: { physical: 0, social: 1, mental: 2 } }. */
   priorities: Partial<Record<'attribute' | 'ability', PriorityChoice>>;
   /** Puntos repartidos con el presupuesto de creación, por clave de rasgo. */
@@ -32,12 +31,39 @@ export interface Character {
   edition: EditionId;
   rulesetVersion: string;
   name: string;
-  concept?: string;
+  concept: string;
+  clan?: string;
   status: CharacterStatus;
   sheet: CharacterSheet;
   createdAt: string;
+  /** También es la versión para el control optimista: se reenvía al guardar. */
   updatedAt: string;
 }
+
+export type CharacterSummary = Omit<Character, 'sheet' | 'ownerId' | 'rulesetVersion'>;
+
+export interface CreateCharacterRequest {
+  edition: EditionId;
+  name: string;
+  concept?: string;
+}
+
+export interface UpdateCharacterRequest {
+  name: string;
+  concept: string;
+  sheet: CharacterSheet;
+  /** `updatedAt` de la versión que se editó. Si no coincide: 409 CONFLICTO_VERSION. */
+  updatedAt: string;
+}
+
+export interface EvaluateCharacterRequest {
+  /** Ficha candidata; si falta se evalúa la guardada. */
+  sheet?: CharacterSheet;
+  mode?: 'draft' | 'complete';
+}
+
+export const CHARACTER_NAME_MAX_LENGTH = 60;
+export const CHARACTER_CONCEPT_MAX_LENGTH = 120;
 
 export function emptySheet(): CharacterSheet {
   return { priorities: {}, traits: {}, freebies: [] };

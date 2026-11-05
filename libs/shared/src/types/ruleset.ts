@@ -16,6 +16,8 @@ export interface PriorityBudget {
   category: 'attribute' | 'ability';
   /** Grupos entre los que se reparten las prioridades. */
   groups: string[];
+  /** Nombre visible de cada grupo (p. ej. physical → Físicos). */
+  groupLabels: Record<string, string>;
   /** Puntos por prioridad: primaria, secundaria, terciaria. */
   points: number[];
   /** Máximo por rasgo antes de gastar puntos gratuitos. */
@@ -26,6 +28,8 @@ export interface PriorityBudget {
 export interface FixedBudget {
   category: 'discipline' | 'background' | 'virtue';
   points: number;
+  /** Nombre visible del presupuesto (p. ej. Disciplinas). */
+  label: string;
   /** Solo disciplinas de clan al crear. */
   clanOnly?: boolean;
 }
@@ -34,6 +38,20 @@ export interface FreebieRules {
   total: number;
   /** Coste por punto según categoría. */
   costs: Partial<Record<string, number>>;
+  /** Coste por rasgo concreto; tiene prioridad sobre `costs` (p. ej. Humanidad, Voluntad). */
+  traitCosts?: Partial<Record<string, number>>;
+}
+
+/** Rasgos que no se reparten directamente sino que se calculan a partir de otros. */
+export interface DerivedRules {
+  /** Humanidad = suma de estas virtudes + gratuitos en `traitKey`. */
+  humanity: { from: string[]; traitKey: string; max: number };
+  /** Fuerza de Voluntad = suma de estas virtudes + gratuitos en `traitKey`. */
+  willpower: { from: string[]; traitKey: string; max: number };
+  /** Generación = base − puntos del trasfondo (sin bajar de `min`). */
+  generation: { base: number; min: number; backgroundKey: string };
+  /** Reserva de sangre por generación. */
+  bloodPool: Record<number, { max: number; perTurn: number }>;
 }
 
 export interface MeritsFlawsRules {
@@ -65,6 +83,7 @@ export interface Ruleset {
   };
   freebies?: FreebieRules;
   meritsFlaws?: MeritsFlawsRules;
+  derived?: DerivedRules;
   dice: DiceSystem;
   actions: SuggestedAction[];
 }

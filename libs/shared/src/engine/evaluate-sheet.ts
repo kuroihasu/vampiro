@@ -2,6 +2,7 @@ import type { CharacterSheet } from '../types/character.js';
 import type { RoomConfig } from '../types/room-config.js';
 import type { Ruleset } from '../types/ruleset.js';
 import type { RuleViolation } from '../errors/violation.js';
+import { deriveStats } from './derived.js';
 import { findTrait, freebieDots } from './traits.js';
 
 export interface BudgetStatus {
@@ -73,6 +74,23 @@ export function evaluateSheet(
     }
   }
 
+  // Rasgos sin presupuesto de creación (p. ej. Humanidad): solo con puntos gratuitos
+  const budgeted = new Set<string>([
+    ...ruleset.creation.priorities.map((b) => b.category),
+    ...ruleset.creation.fixed.map((b) => b.category),
+  ]);
+  for (const [key, dots] of Object.entries(sheet.traits)) {
+    const def = findTrait(ruleset, key);
+    if (def && dots > 0 && !budgeted.has(def.category)) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: key,
+        message: `${def.name} no se reparte al crear; súbelo con puntos gratuitos.`,
+      });
+    }
+  }
+
   // Presupuestos por prioridad (atributos y habilidades)
   for (const budget of ruleset.creation.priorities) {
     const choice = sheet.priorities[budget.category] ?? {};
@@ -107,6 +125,7 @@ export function evaluateSheet(
       const priority = choice[group];
       const available = valid && priority !== undefined ? (budget.points[priority] ?? 0) : 0;
       const path = `${budget.category}.${group}`;
+      const label = budget.groupLabels[group] ?? group;
       budgets.push({ path, available, spent });
 
       if (valid && priority !== undefined) {
@@ -115,14 +134,14 @@ export function evaluateSheet(
             code: 'PRESUPUESTO_EXCEDIDO',
             severity: 'error',
             path,
-            message: `Has repartido ${spent} de ${available} puntos en ${group}.`,
+            message: `Has repartido ${spent} de ${available} puntos en ${label}.`,
           });
         } else if (spent < available) {
           violations.push({
             code: 'PUNTOS_SIN_REPARTIR',
             severity: unspentSeverity,
             path,
-            message: `Te quedan ${available - spent} puntos por repartir en ${group}.`,
+            message: `Te quedan ${available - spent} puntos por repartir en ${label}.`,
           });
         }
       }
@@ -155,14 +174,14 @@ export function evaluateSheet(
         code: 'PRESUPUESTO_EXCEDIDO',
         severity: 'error',
         path: budget.category,
-        message: `Has repartido ${spent} de ${budget.points} puntos en ${budget.category}.`,
+        message: `Has repartido ${spent} de ${budget.points} puntos en ${budget.label}.`,
       });
     } else if (spent < budget.points) {
       violations.push({
         code: 'PUNTOS_SIN_REPARTIR',
         severity: unspentSeverity,
         path: budget.category,
-        message: `Te quedan ${budget.points - spent} puntos por repartir en ${budget.category}.`,
+        message: `Te quedan ${budget.points - spent} puntos por repartir en ${budget.label}.`,
       });
     }
 
@@ -189,7 +208,7 @@ export function evaluateSheet(
     for (const purchase of sheet.freebies) {
       const def = findTrait(ruleset, purchase.traitKey);
       if (!def) continue;
-      const cost = ruleset.freebies.costs[def.category];
+      const cost = ruleset.freebies.traitCosts?.[def.key] ?? ruleset.freebies.costs[def.category];
       if (cost === undefined) {
         violations.push({
           code: 'REQUISITO_NO_CUMPLIDO',
@@ -224,6 +243,26 @@ export function evaluateSheet(
         path: key,
         message: `${def.name} no puede superar ${def.max} puntos.`,
       });
+    }
+  }
+
+  // Rasgos derivados (Humanidad, Voluntad)
+  const derived = deriveStats(sheet, ruleset);
+  if (derived && ruleset.derived) {
+    const checks = [
+      { rule: ruleset.derived.humanity, value: derived.humanity },
+      { rule: ruleset.derived.willpower, value: derived.willpower },
+    ];
+    for (const { rule, value } of checks) {
+      if (value > rule.max) {
+        const name = findTrait(ruleset, rule.traitKey)?.name ?? rule.traitKey;
+        violations.push({
+          code: 'MAX_GENERACION_SUPERADO',
+          severity: 'error',
+          path: rule.traitKey,
+          message: `${name} no puede superar ${rule.max} (ahora suma ${value}).`,
+        });
+      }
     }
   }
 
@@ -266,11 +305,12 @@ function checkRoomConfig(
     }
   }
 
-  if (sheet.generation !== undefined) {
+  const generation = deriveStats(sheet, ruleset)?.generation;
+  if (generation !== undefined) {
     const { minGeneration, maxGeneration } = config;
     if (
-      (minGeneration !== undefined && sheet.generation < minGeneration) ||
-      (maxGeneration !== undefined && sheet.generation > maxGeneration)
+      (minGeneration !== undefined && generation < minGeneration) ||
+      (maxGeneration !== undefined && generation > maxGeneration)
     ) {
       violations.push({
         code: 'REQUISITO_NO_CUMPLIDO',
@@ -285,8 +325,23 @@ function checkRoomConfig(
 }
 
 /**
- * ¿Se puede aplicar este cambio de puntos? Devuelve las violaciones nuevas que
- * provocaría (con severidad `error`). Lista vacía = el editor puede aplicarlo.
+ * ¿Se puede pasar de `sheet` a `next`? Devuelve solo los errores nuevos que provocaría
+ * el cambio. Lista vacía = el editor puede aplicarlo.
+ */
+export function checkSheetChange(
+  sheet: CharacterSheet,
+  next: CharacterSheet,
+  ruleset: Ruleset,
+  options: EvaluateOptions = {},
+): RuleViolation[] {
+  const errors = (s: CharacterSheet) =>
+    evaluateSheet(s, ruleset, options).violations.filter((v) => v.severity === 'error');
+  const seen = new Set(errors(sheet).map((v) => `${v.code}|${v.path}`));
+  return errors(next).filter((v) => !seen.has(`${v.code}|${v.path}`));
+}
+
+/**
+ * ¿Se puede poner este rasgo a `newDots` puntos de creación? Atajo de checkSheetChange.
  */
 export function checkTraitChange(
   sheet: CharacterSheet,
@@ -295,13 +350,6 @@ export function checkTraitChange(
   newDots: number,
   options: EvaluateOptions = {},
 ): RuleViolation[] {
-  const before = evaluateSheet(sheet, ruleset, options).violations.filter(
-    (v) => v.severity === 'error',
-  );
   const next: CharacterSheet = { ...sheet, traits: { ...sheet.traits, [traitKey]: newDots } };
-  const after = evaluateSheet(next, ruleset, options).violations.filter(
-    (v) => v.severity === 'error',
-  );
-  const seen = new Set(before.map((v) => `${v.code}|${v.path}`));
-  return after.filter((v) => !seen.has(`${v.code}|${v.path}`));
+  return checkSheetChange(sheet, next, ruleset, options);
 }

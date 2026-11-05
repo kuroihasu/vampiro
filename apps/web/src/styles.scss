@@ -234,6 +234,36 @@ select {
   }
 }
 
+.button.secondary {
+  background: transparent;
+  border-color: var(--ash);
+
+  &:hover {
+    background: var(--vellum);
+  }
+}
+
+.notice {
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--gold);
+  background: var(--vellum);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+select {
+  padding: 0.4rem 0.6rem;
+  background: var(--vellum);
+  border: 1px solid var(--rule);
+}
+
 .alert {
   padding: 0.75rem 1rem;
   border-left: 3px solid #e0626a;

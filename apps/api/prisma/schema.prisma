@@ -25,6 +25,7 @@ model User {
   role          Role           @default(user)
   createdAt     DateTime       @default(now())
   refreshTokens RefreshToken[]
+  characters    Character[]
 }
 
 /// Refresh token rotado. Solo se guarda el hash SHA-256 del valor que recibe el cliente.
@@ -52,4 +53,28 @@ model WikiArticle {
   updatedAt    DateTime @updatedAt
 
   @@index([category])
+}
+
+enum CharacterStatus {
+  draft
+  complete
+}
+
+/// Ficha de personaje. `sheet` es el CharacterSheet de @vampiro/shared; `clan` lo replica para listar.
+/// `updatedAt` hace de versión para el control optimista (PUT).
+model Character {
+  id             String          @id @default(uuid()) @db.Uuid
+  ownerId        String          @db.Uuid
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  edition        String
+  rulesetVersion String
+  name           String
+  concept        String          @default("")
+  clan           String?
+  status         CharacterStatus @default(draft)
+  sheet          Json
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([ownerId, edition])
 }

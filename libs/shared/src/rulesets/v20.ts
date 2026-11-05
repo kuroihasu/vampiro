@@ -198,6 +198,24 @@ export const V20_RULESET: Ruleset = {
     virtue('conciencia', 'Conciencia', 'Sentido moral; resiste la degeneración.'),
     virtue('autocontrol', 'Autocontrol', 'Dominio sobre la Bestia y el frenesí.'),
     virtue('coraje', 'Coraje', 'Valor ante el fuego, el sol y el miedo.'),
+
+    // Derivados: se calculan de las virtudes y solo suben con puntos gratuitos
+    {
+      key: 'humanidad',
+      name: 'Humanidad',
+      category: 'other',
+      summary: 'Lo que queda de tu parte humana. Empieza en Conciencia + Autocontrol.',
+      base: 0,
+      max: 10,
+    },
+    {
+      key: 'voluntad',
+      name: 'Fuerza de Voluntad',
+      category: 'other',
+      summary: 'Determinación para resistir y esforzarse. Empieza en Coraje.',
+      base: 0,
+      max: 10,
+    },
   ],
   clans: [
     {
@@ -245,25 +263,45 @@ export const V20_RULESET: Ruleset = {
   ],
   creation: {
     priorities: [
-      { category: 'attribute', groups: ['physical', 'social', 'mental'], points: [7, 5, 3] },
+      {
+        category: 'attribute',
+        groups: ['physical', 'social', 'mental'],
+        groupLabels: { physical: 'Físicos', social: 'Sociales', mental: 'Mentales' },
+        points: [7, 5, 3],
+      },
       {
         category: 'ability',
         groups: ['talents', 'skills', 'knowledges'],
+        groupLabels: { talents: 'Talentos', skills: 'Técnicas', knowledges: 'Conocimientos' },
         points: [13, 9, 5],
         maxPerTraitAtCreation: 3,
       },
     ],
     fixed: [
-      { category: 'discipline', points: 3, clanOnly: true },
-      { category: 'background', points: 5 },
-      { category: 'virtue', points: 7 },
+      { category: 'discipline', label: 'Disciplinas', points: 3, clanOnly: true },
+      { category: 'background', label: 'Trasfondos', points: 5 },
+      { category: 'virtue', label: 'Virtudes', points: 7 },
     ],
   },
   freebies: {
     total: 15,
     costs: { attribute: 5, ability: 2, discipline: 7, background: 1, virtue: 2 },
+    traitCosts: { humanidad: 2, voluntad: 1 },
   },
   meritsFlaws: { maxFlawPoints: 7 },
+  derived: {
+    humanity: { from: ['conciencia', 'autocontrol'], traitKey: 'humanidad', max: 10 },
+    willpower: { from: ['coraje'], traitKey: 'voluntad', max: 10 },
+    generation: { base: 13, min: 8, backgroundKey: 'generacion' },
+    bloodPool: {
+      13: { max: 10, perTurn: 1 },
+      12: { max: 11, perTurn: 1 },
+      11: { max: 12, perTurn: 1 },
+      10: { max: 13, perTurn: 1 },
+      9: { max: 14, perTurn: 2 },
+      8: { max: 15, perTurn: 3 },
+    },
+  },
   dice: { kind: 'difficulty', minDifficulty: 2, maxDifficulty: 10, onesCancel: true },
   actions: [
     { key: 'seducir', label: 'Seducir', traits: ['apariencia', 'subterfugio'] },
