@@ -305,6 +305,41 @@
   color: var(--gold);
 }
 
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--ash);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.legend__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+
+  &.base {
+    background: radial-gradient(circle at 35% 30%, var(--parchment), var(--ash));
+  }
+
+  &.creation {
+    background: radial-gradient(circle at 35% 30%, #ff6b78, var(--blood) 55%, var(--oxblood));
+  }
+
+  &.extra {
+    background: radial-gradient(circle at 35% 30%, #fff1c9, var(--gold) 55%, #8a6a2e);
+  }
+}
+
 .counters,
 .derived {
   margin: 0 0 1rem;

@@ -368,6 +368,13 @@
     <aside class="summary" aria-label="Resumen de la ficha">
       <h2 class="visually-hidden">Resumen</h2>
       <p class="summary__title">Puntos por repartir</p>
+      <ul class="legend" aria-label="Leyenda de los puntos">
+        <li><span class="legend__dot base"></span>Base</li>
+        <li><span class="legend__dot creation"></span>Creación</li>
+        @if (store.ruleset()?.freebies) {
+          <li><span class="legend__dot extra"></span>Gratuitos</li>
+        }
+      </ul>
       <dl class="counters">
         @for (c of counters(); track c.path) {
           <div [class.over]="c.over" [class.full]="c.full" [class.current]="c.step === step()">
