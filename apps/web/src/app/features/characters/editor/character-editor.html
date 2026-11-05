@@ -6,35 +6,71 @@
   <p class="muted">Cargando la ficha…</p>
 } @else {
   <header class="head">
+    <p class="eyebrow">{{ editionName() }}</p>
     <h1>{{ store.meta().name || 'Sin nombre' }}</h1>
-    <p class="muted">
+    <div class="head__meta">
       @if (store.character()?.status === 'complete') {
-        Ficha completa de {{ editionName() }}
+        <span class="badge badge--ok">Ficha completa</span>
       } @else {
-        Borrador de {{ editionName() }}
+        <span class="badge badge--dim">Borrador</span>
       }
-    </p>
+      @if (clan(); as c) {
+        <span class="badge badge--blood">{{ c.name }}</span>
+      }
+      @if (store.meta().concept) {
+        <span class="head__concept">{{ store.meta().concept }}</span>
+      }
+    </div>
+    <div
+      class="progress"
+      role="progressbar"
+      aria-label="Pasos completados"
+      [attr.aria-valuenow]="progress().done"
+      aria-valuemin="0"
+      [attr.aria-valuemax]="progress().total"
+    >
+      <span class="progress__bar" [style.width.%]="progress().percent"></span>
+    </div>
+    <p class="progress__text">{{ progress().done }} de {{ progress().total }} pasos completos</p>
   </header>
 
   <div class="editor">
     <nav class="steps" aria-label="Pasos de la ficha">
       <ol>
-        @for (s of steps(); track s.id) {
-          <li>
+        @for (s of steps(); track s.id; let i = $index) {
+          <li [class]="stepStates()[s.id]">
             <button
               type="button"
               [class.current]="step() === s.id"
               [attr.aria-current]="step() === s.id ? 'step' : null"
-              (click)="step.set(s.id)"
+              (click)="goTo(s.id)"
             >
-              {{ s.label }}
+              <span class="steps__num" aria-hidden="true">
+                @switch (stepStates()[s.id]) {
+                  @case ('done') {
+                    ✓
+                  }
+                  @case ('error') {
+                    !
+                  }
+                  @default {
+                    {{ i + 1 }}
+                  }
+                }
+              </span>
+              <span class="steps__label">{{ s.label }}</span>
+              @if (stepStates()[s.id] === 'done') {
+                <span class="visually-hidden">(completo)</span>
+              } @else if (stepStates()[s.id] === 'error') {
+                <span class="visually-hidden">(con errores)</span>
+              }
             </button>
           </li>
         }
       </ol>
     </nav>
 
-    <section class="panel" aria-live="polite">
+    <section class="panel" id="panel-ficha" aria-live="polite">
       @switch (step()) {
         @case ('concepto') {
           <h2>Concepto</h2>
@@ -204,8 +240,7 @@
           } @else {
             <p class="muted">
               Primero
-              <button type="button" class="link-button" (click)="step.set('clan')">
-                elige un clan</button
+              <button type="button" class="link-button" (click)="goTo('clan')">elige un clan</button
               >.
             </p>
           }
@@ -313,15 +348,39 @@
           }
         }
       }
+
+      <nav class="step-nav" aria-label="Cambiar de paso">
+        @if (prevStep(); as prev) {
+          <button type="button" class="button ghost" (click)="goTo(prev.id)">
+            <span aria-hidden="true">←</span> {{ prev.label }}
+          </button>
+        } @else {
+          <span></span>
+        }
+        @if (nextStep(); as next) {
+          <button type="button" class="button secondary" (click)="goTo(next.id)">
+            {{ next.label }} <span aria-hidden="true">→</span>
+          </button>
+        }
+      </nav>
     </section>
 
     <aside class="summary" aria-label="Resumen de la ficha">
       <h2 class="visually-hidden">Resumen</h2>
+      <p class="summary__title">Puntos por repartir</p>
+      <ul class="legend" aria-label="Leyenda de los puntos">
+        <li><span class="legend__dot base"></span>Base</li>
+        <li><span class="legend__dot creation"></span>Creación</li>
+        @if (store.ruleset()?.freebies) {
+          <li><span class="legend__dot extra"></span>Gratuitos</li>
+        }
+      </ul>
       <dl class="counters">
         @for (c of counters(); track c.path) {
-          <div [class.over]="(c.budget?.spent ?? 0) > (c.budget?.available ?? 0)">
+          <div [class.over]="c.over" [class.full]="c.full" [class.current]="c.step === step()">
             <dt>{{ c.label }}</dt>
             <dd>{{ c.budget?.spent ?? 0 }} / {{ c.budget?.available ?? 0 }}</dd>
+            <span class="meter" aria-hidden="true"><span [style.width.%]="c.percent"></span></span>
           </div>
         }
       </dl>
@@ -394,7 +453,9 @@
         <button
           type="button"
           class="button"
-          [disabled]="store.saving() || !store.dirty() || metaForm().invalid()"
+          [disabled]="!canSave()"
+          aria-keyshortcuts="Control+S"
+          title="Guardar (Ctrl+S)"
           (click)="save()"
         >
           {{ store.saving() ? 'Guardando…' : 'Guardar' }}
@@ -410,10 +471,25 @@
           </button>
         }
         @if (store.dirty()) {
-          <span class="muted unsaved">Cambios sin guardar</span>
+          <span class="unsaved"
+            ><span class="unsaved__dot" aria-hidden="true"></span>Cambios sin guardar</span
+          >
+        } @else {
+          <span class="muted shortcut">Ctrl + S para guardar</span>
         }
       </div>
     </aside>
+  </div>
+}
+
+@if (store.character() && store.dirty()) {
+  <div class="mobile-save" role="region" aria-label="Guardar cambios">
+    <span class="unsaved"
+      ><span class="unsaved__dot" aria-hidden="true"></span>Cambios sin guardar</span
+    >
+    <button type="button" class="button" [disabled]="!canSave()" (click)="save()">
+      {{ store.saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
   </div>
 }
 

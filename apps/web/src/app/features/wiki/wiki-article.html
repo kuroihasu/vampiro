@@ -6,8 +6,14 @@
 </p>
 
 @if (notFound()) {
-  <h1>Este artículo no existe</h1>
-  <p class="muted">Puede que el enlace esté mal escrito. Búscalo desde el índice de la wiki.</p>
+  <div class="empty-state">
+    <span class="empty-state__sigil" aria-hidden="true">?</span>
+    <h1>Este artículo no existe</h1>
+    <p>
+      Puede que el enlace esté mal escrito. Búscalo desde el
+      <a routerLink="/wiki">índice de la wiki</a>.
+    </p>
+  </div>
 } @else if (errorText(); as message) {
   <p class="alert" role="alert">{{ message }}</p>
 } @else if (article.hasValue()) {
@@ -20,17 +26,28 @@
         }}</a>
       }
       <h1>{{ a.title }}</h1>
-      <p class="meta muted">
-        Ediciones: {{ a.editions.join(', ').toUpperCase() }}
-        @if (a.traitKey) {
-          <br />
-          Rasgo de la ficha:
-          <button type="button" class="trait" [traitTooltip]="a.traitKey">{{ a.title }}</button>
+      <div class="meta">
+        @for (e of a.editions; track e) {
+          <span class="badge badge--gold">{{ editionShort(e) }}</span>
         }
-      </p>
+        @if (a.traitKey) {
+          <span class="muted">
+            Rasgo de la ficha:
+            <button type="button" class="trait" [traitTooltip]="a.traitKey">{{ a.title }}</button>
+          </span>
+        }
+      </div>
     </header>
     <app-markdown [source]="a.bodyMarkdown" />
+    <div class="ornament" aria-hidden="true"><span></span></div>
   </article>
 } @else {
-  <p class="muted">Cargando artículo…</p>
+  <div class="article" aria-busy="true">
+    <span class="skeleton" style="width: 30%"></span>
+    <span class="skeleton" style="width: 70%; height: 3rem; margin: 1rem 0 2rem"></span>
+    <span class="skeleton"></span>
+    <span class="skeleton" style="margin-top: 0.75rem"></span>
+    <span class="skeleton" style="width: 80%; margin-top: 0.75rem"></span>
+    <span class="visually-hidden">Cargando artículo…</span>
+  </div>
 }

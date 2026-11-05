@@ -1,89 +1,172 @@
-.back {
-  margin: 0 0 1.5rem;
+.head {
+  margin-bottom: 2.25rem;
 
-  a {
-    color: var(--ash);
+  h1 {
+    margin-bottom: 0.6rem;
   }
 }
 
-.head {
-  margin-bottom: 2rem;
+.head__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
 
-  h1 {
-    margin-bottom: 0.25rem;
-  }
+.head__concept {
+  color: var(--ash);
+  font-style: italic;
+}
 
-  p {
-    margin: 0;
-  }
+/* Barra de progreso de la ficha */
+.progress {
+  max-width: 28rem;
+  height: 3px;
+  margin-top: 1.5rem;
+  border-radius: 2px;
+  background: var(--vellum-3);
+  overflow: hidden;
+}
+
+.progress__bar {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--oxblood), var(--blood-bright));
+  box-shadow: 0 0 10px var(--blood-glow);
+  transition: width 0.4s var(--ease);
+}
+
+.progress__text {
+  margin: 0.4rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ash);
 }
 
 /* Pasos | panel | resumen. En pantallas estrechas se apilan. */
 .editor {
   display: grid;
-  grid-template-columns: 11rem minmax(0, 40rem) minmax(15rem, 1fr);
+  grid-template-columns: 13rem minmax(0, 42rem) minmax(16rem, 1fr);
   gap: 2rem clamp(1.5rem, 3vw, 3rem);
   align-items: start;
 
-  @media (max-width: 70rem) {
-    grid-template-columns: 11rem minmax(0, 1fr);
+  @media (max-width: 72rem) {
+    grid-template-columns: 13rem minmax(0, 1fr);
 
     .summary {
       grid-column: 1 / -1;
+      position: static;
     }
   }
 
-  @media (max-width: 44rem) {
+  @media (max-width: 46rem) {
     grid-template-columns: 1fr;
   }
 }
 
-/* Los pasos sí son una secuencia: se numeran. */
-.steps ol {
-  margin: 0;
-  padding: 0 0 0 1.5rem;
-  border-left: 1px solid var(--rule);
+/* Índice de pasos con su estado */
+.steps {
+  position: sticky;
+  top: 5.5rem;
 
-  li::marker {
-    color: var(--ash);
-    font-variant-numeric: tabular-nums;
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.15rem;
   }
 
   button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
     background: none;
-    border: 0;
-    padding: 0.4rem 0.25rem;
-    color: var(--ash);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--parchment-dim);
     cursor: pointer;
     text-align: left;
+    font-size: 0.9375rem;
+    transition:
+      background-color 0.15s var(--ease),
+      color 0.15s var(--ease);
 
     &:hover {
       color: var(--parchment);
+      background: rgb(255 255 255 / 0.03);
     }
 
     &.current {
       color: var(--parchment);
-      box-shadow: inset 0 -2px 0 var(--oxblood);
+      background: linear-gradient(90deg, rgb(140 28 36 / 0.25), transparent);
+      border-color: var(--rule);
+
+      .steps__num {
+        border-color: var(--blood-bright);
+        color: var(--parchment);
+        box-shadow: 0 0 12px var(--blood-glow);
+      }
     }
   }
 
-  @media (max-width: 44rem) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 1.5rem;
-    border-left: 0;
-    padding: 0 0 0 1.25rem;
+  .done .steps__num {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+  }
+
+  .error .steps__num {
+    background: var(--oxblood);
+    border-color: var(--blood-bright);
+    color: var(--parchment);
+  }
+
+  @media (max-width: 46rem) {
+    position: static;
+    margin: 0 calc(var(--page-pad) * -1);
+    padding: 0 var(--page-pad);
+    overflow-x: auto;
+
+    ol {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    button {
+      white-space: nowrap;
+    }
   }
 }
 
+.steps__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid var(--rule-gold);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ash);
+  transition: all 0.2s var(--ease);
+}
+
 .panel {
+  scroll-margin-top: 6rem;
+  min-width: 0;
+
   h2 {
     margin-top: 0;
+    font-size: 2.25rem;
   }
 
   h3 {
-    margin: 2rem 0 0.25rem;
-    font-size: 1.125rem;
+    margin: 2rem 0 0.35rem;
+    font-size: 1.4rem;
   }
 }
 
@@ -91,52 +174,89 @@
   margin: 0 0 1.5rem;
 }
 
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule-soft);
+}
+
 .group {
   margin-bottom: 2rem;
+  padding: 1rem 1.25rem 0.5rem;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-lg);
+  background: rgb(0 0 0 / 0.18);
 }
 
 .group__head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem 1rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
 
   h3 {
     margin: 0;
   }
+
+  select {
+    min-height: 2.25rem;
+    padding-block: 0.3rem;
+    font-size: 0.9375rem;
+  }
 }
 
 .group__count {
-  color: var(--ash);
+  margin-left: auto;
+  color: var(--gold);
   font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
 }
 
+/* Clanes y Caminos como tarjetas seleccionables */
 .clans {
   border: 0;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
 }
 
 .clan {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0 0.75rem;
-  padding: 0.75rem 1rem;
+  align-content: start;
+  gap: 0.15rem 0.75rem;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(170deg, var(--vellum-2), var(--vellum));
   cursor: pointer;
+  transition:
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
+    transform 0.15s var(--ease);
 
   input {
     grid-row: span 3;
-    accent-color: var(--oxblood);
-    margin-top: 0.35rem;
+    margin-top: 0.45rem;
+  }
+
+  &:hover {
+    border-color: #5a4440;
+    transform: translateY(-1px);
   }
 
   &.selected {
-    border-color: var(--oxblood);
-    background: var(--vellum);
+    border-color: var(--blood);
+    background: linear-gradient(170deg, rgb(140 28 36 / 0.28), var(--vellum));
+    box-shadow:
+      0 0 0 1px var(--blood),
+      0 10px 30px -10px var(--blood-glow);
   }
 
   &:focus-within {
@@ -146,26 +266,78 @@
 }
 
 .clan__name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .clan__disciplines {
-  color: var(--parchment);
-  font-size: 0.9375rem;
+  color: var(--gold);
+  font-size: 0.875rem;
 }
 
 .clan__weakness {
   color: var(--ash);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-style: italic;
+  line-height: 1.45;
 }
 
+/* Resumen lateral */
 .summary {
   position: sticky;
-  top: 1rem;
-  padding: 1rem 1.25rem;
-  background: var(--vellum);
-  border-top: 3px solid var(--oxblood);
+  top: 5.5rem;
+  padding: 1.25rem 1.35rem;
+  background: linear-gradient(180deg, var(--vellum-2), var(--vellum));
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--blood);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.summary__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--ash);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.legend__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+
+  &.base {
+    background: radial-gradient(circle at 35% 30%, var(--parchment), var(--ash));
+  }
+
+  &.creation {
+    background: radial-gradient(circle at 35% 30%, #ff6b78, var(--blood) 55%, var(--oxblood));
+  }
+
+  &.extra {
+    background: radial-gradient(circle at 35% 30%, #fff1c9, var(--gold) 55%, #8a6a2e);
+  }
 }
 
 .counters,
@@ -174,40 +346,106 @@
 
   div {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.2rem 0;
+    gap: 0 1rem;
+    padding: 0.3rem 0;
   }
 
   dt {
-    color: var(--ash);
+    color: var(--parchment-dim);
+    font-size: 0.9375rem;
   }
 
   dd {
     margin: 0;
     font-variant-numeric: tabular-nums;
   }
+}
+
+.counters {
+  .current dt {
+    color: var(--parchment);
+  }
+
+  .full dd {
+    color: var(--gold);
+  }
 
   .over dd {
-    color: #f08a90;
+    color: var(--danger);
   }
 }
 
+.meter {
+  flex-basis: 100%;
+  height: 2px;
+  margin-top: 0.3rem;
+  background: var(--vellum-3);
+  border-radius: 1px;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--ash);
+    border-radius: 1px;
+    transition: width 0.3s var(--ease);
+  }
+
+  .full & span {
+    background: var(--gold);
+  }
+
+  .over & span {
+    background: var(--blood-bright);
+  }
+}
+
+/* Rasgos derivados como fichas pequeñas */
 .derived {
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-soft);
+
+  div {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--rule-soft);
+    border-radius: var(--radius);
+    background: rgb(0 0 0 / 0.25);
+  }
+
+  dt {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  dd {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
 }
 
 .problems {
-  font-size: 0.9375rem;
-  color: #f08a90;
+  font-size: 0.875rem;
+  color: var(--danger);
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgb(214 50 66 / 0.4);
+  border-radius: var(--radius);
+  background: rgb(140 28 36 / 0.15);
 
   p {
     margin: 0 0 0.25rem;
+    font-weight: 600;
   }
 
   ul {
-    margin: 0 0 1rem;
+    margin: 0;
     padding-left: 1.1rem;
   }
 }
@@ -219,9 +457,25 @@
   gap: 0.75rem;
 }
 
+.unsaved,
+.shortcut {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+}
+
 .unsaved {
-  font-size: 0.875rem;
-  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--gold);
+}
+
+.unsaved__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: blink 1.6s ease-in-out infinite;
 }
 
 .merits {
@@ -236,16 +490,12 @@
 
 .pattern-status {
   margin: 0 0 1.5rem;
-  color: var(--ash);
+  color: var(--gold);
   font-variant-numeric: tabular-nums;
 
   &.error {
-    color: #f08a90;
+    color: var(--danger);
   }
-}
-
-.pattern-choice select {
-  width: 100%;
 }
 
 .specialties {
@@ -266,15 +516,38 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 
-  select,
-  input {
-    padding: 0.45rem 0.6rem;
-    background: var(--vellum);
-    border: 1px solid var(--rule);
-  }
-
   input {
     flex: 1;
     min-width: 10rem;
+  }
+}
+
+/* En móvil el resumen queda lejos: barra fija para guardar */
+.mobile-save {
+  display: none;
+
+  @media (max-width: 72rem) {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem var(--page-pad);
+    background: rgb(11 7 8 / 0.92);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--rule-gold);
+    animation: rise 0.2s var(--ease);
+
+    .unsaved {
+      flex-basis: auto;
+    }
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
   }
 }

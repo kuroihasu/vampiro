@@ -5,11 +5,18 @@
 } @else if (room.hasValue()) {
   @let r = room.value();
   <header class="head">
+    <p class="eyebrow">{{ editionName() }}</p>
     <h1>{{ r.name }}</h1>
-    <p class="muted">
-      Partida de {{ editionName() }}.
-      {{ isMaster() ? 'Eres el master.' : 'Juegas en esta sala.' }}
-    </p>
+    <div class="head__meta">
+      @if (isMaster()) {
+        <span class="badge badge--blood">Eres el master</span>
+      } @else {
+        <span class="badge">Juegas en esta sala</span>
+      }
+      <span class="muted">
+        {{ r.characters.length }} {{ r.characters.length === 1 ? 'personaje' : 'personajes' }}
+      </span>
+    </div>
   </header>
 
   <div class="status" aria-live="polite">
@@ -29,7 +36,10 @@
           @for (c of r.characters; track c.id) {
             <li [class.npc]="c.isNpc">
               <div class="who">
-                <span class="name">{{ c.name }}</span>
+                <span class="name">
+                  <span class="monogram" aria-hidden="true">{{ c.name.charAt(0) }}</span>
+                  {{ c.name }}
+                </span>
                 <span class="muted">
                   {{ c.isNpc ? 'NPC' : 'Personaje' }} de {{ c.controllerName }}
                   @if (c.status === 'draft') {
@@ -39,7 +49,7 @@
               </div>
               <div class="compliance">
                 @if (c.compliant) {
-                  <span class="ok">Cumple las reglas</span>
+                  <span class="badge badge--ok">Cumple las reglas</span>
                 } @else {
                   <button
                     type="button"
@@ -89,7 +99,7 @@
           }
         </ul>
 
-        <form class="link" (submit)="link($event)">
+        <form class="link card" (submit)="link($event)">
           <h3>Traer una ficha</h3>
           @if (linkable().length) {
             <div class="link__row">
@@ -133,7 +143,7 @@
         <section class="play" aria-labelledby="dice-title">
           <div class="play__head">
             <h2 id="dice-title">Tiradas</h2>
-            <span class="live muted" role="status">
+            <span [class]="'live ' + socket.status()" role="status">
               @switch (socket.status()) {
                 @case ('connected') {
                   En directo
@@ -165,7 +175,7 @@
       }
 
       @if (isMaster() && ruleset.hasValue()) {
-        <section aria-labelledby="config-title" class="master">
+        <section aria-labelledby="config-title" class="master card">
           <h2 id="config-title">Reglas de la sala</h2>
           <app-room-config-editor
             [config]="r.config"

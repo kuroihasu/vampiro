@@ -1,10 +1,11 @@
+<header class="page-head">
+  <p class="eyebrow">Elíseo</p>
+  <h1 id="rooms-title">Salas</h1>
+  <p>Una sala reúne al master y a sus jugadores, con sus fichas y sus tiradas en directo.</p>
+</header>
+
 <div class="rooms">
   <section aria-labelledby="rooms-title">
-    <h1 id="rooms-title">Salas</h1>
-    <p class="muted lead">
-      Una sala reúne al master y a sus jugadores, con sus fichas y sus tiradas.
-    </p>
-
     @if (error(); as message) {
       <p class="alert" role="alert">{{ message }}</p>
     }
@@ -15,19 +16,42 @@
       <ul class="list">
         @for (r of list.value(); track r.id) {
           <li>
-            <a [routerLink]="['/salas', r.id]">{{ r.name }}</a>
-            <span class="muted">
-              {{ r.myRole === 'master' ? 'Eres el master' : 'Juegas' }} en
-              {{ editionName(r.edition) }}. {{ r.memberCount }}
-              {{ r.memberCount === 1 ? 'persona' : 'personas' }}.
-            </span>
+            <a class="room-card" [routerLink]="['/salas', r.id]">
+              <span class="room-card__top">
+                <span class="badge badge--gold" [title]="editionName(r.edition)">{{
+                  short[r.edition]
+                }}</span>
+                @if (r.myRole === 'master') {
+                  <span class="badge badge--blood">Master</span>
+                } @else {
+                  <span class="badge">Jugador</span>
+                }
+              </span>
+              <span class="room-card__name">{{ r.name }}</span>
+              <span class="room-card__meta">
+                <span class="room-card__people" aria-hidden="true">
+                  @for (i of people(r.memberCount); track $index) {
+                    <span></span>
+                  }
+                </span>
+                {{ r.memberCount }} {{ r.memberCount === 1 ? 'persona' : 'personas' }}
+                <span class="room-card__go" aria-hidden="true">Entrar →</span>
+              </span>
+            </a>
           </li>
         } @empty {
-          <li class="empty muted">Aún no estás en ninguna sala. Crea una o únete con un código.</li>
+          <li class="empty-state">
+            <span class="empty-state__sigil" aria-hidden="true">S</span>
+            <p>Aún no estás en ninguna sala. Crea una para tu crónica o únete con un código.</p>
+          </li>
         }
       </ul>
     } @else {
-      <p class="muted">Cargando tus salas…</p>
+      <ul class="list" aria-label="Cargando tus salas…">
+        @for (i of [1, 2]; track i) {
+          <li class="room-card"><span class="skeleton"></span></li>
+        }
+      </ul>
     }
   </section>
 
@@ -49,7 +73,9 @@
           />
           <app-field-errors id="join-code-error" [field]="joinForm.code()" />
         </div>
-        <button type="submit" class="button" [disabled]="joinForm().submitting()">Unirme</button>
+        <button type="submit" class="button block" [disabled]="joinForm().submitting()">
+          Unirme
+        </button>
       </form>
     </section>
 
@@ -74,7 +100,7 @@
             }
           </select>
         </div>
-        <button type="submit" class="button" [disabled]="createForm().submitting()">
+        <button type="submit" class="button block" [disabled]="createForm().submitting()">
           Crear sala
         </button>
       </form>

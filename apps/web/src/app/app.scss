@@ -5,68 +5,329 @@
   padding: 0.5rem 0.75rem;
   background: var(--parchment);
   color: var(--ink);
-  z-index: 10;
+  z-index: 60;
 
   &:focus {
     top: 0.5rem;
   }
 }
 
+/* Barra superior fija con cristal ahumado */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgb(11 7 8 / 0.72);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid var(--rule-soft);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(179 32 45 / 0.5), transparent);
+  }
+}
+
+.topbar__inner {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 2rem;
-  padding: 1rem clamp(1rem, 4vw, 3rem) 0.75rem;
-  border-bottom: 1px solid var(--rule);
+  align-items: center;
+  gap: 2.5rem;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0.7rem var(--page-pad);
 }
 
 .brand {
-  font-family: var(--font-blackletter);
-  font-size: 2rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   text-decoration: none;
   color: var(--parchment);
-}
-
-nav {
-  display: flex;
-  gap: 1.5rem;
-}
-
-nav a,
-.account a {
-  text-decoration: none;
-  color: var(--ash);
-  padding-block: 0.25rem;
-  border-bottom: 2px solid transparent;
 
   &:hover {
-    color: var(--parchment);
-  }
+    color: #fff;
 
-  &.active {
-    color: var(--parchment);
-    border-bottom-color: var(--oxblood);
+    .brand__drop {
+      transform: scale(1.1);
+    }
+  }
+}
+
+/* Gota de sangre dibujada con CSS */
+.brand__drop {
+  width: 0.85rem;
+  height: 0.85rem;
+  background: radial-gradient(circle at 35% 35%, var(--blood-bright), var(--oxblood) 70%);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  box-shadow: 0 0 14px var(--blood-glow);
+  transition: transform 0.25s var(--ease);
+}
+
+.brand__name {
+  font-family: var(--font-blackletter);
+  font-size: 1.85rem;
+  line-height: 1;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 2rem;
+}
+
+.menu nav {
+  display: flex;
+  gap: 0.25rem;
+
+  a {
+    position: relative;
+    padding: 0.45rem 0.85rem;
+    color: var(--parchment-dim);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    transition:
+      color 0.15s var(--ease),
+      background-color 0.15s var(--ease);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0.1rem;
+      width: 0;
+      height: 1px;
+      background: var(--blood-bright);
+      box-shadow: 0 0 8px var(--blood-glow);
+      transition:
+        width 0.25s var(--ease),
+        left 0.25s var(--ease);
+    }
+
+    &:hover {
+      color: var(--parchment);
+      background: rgb(255 255 255 / 0.03);
+    }
+
+    &.active {
+      color: var(--parchment);
+
+      &::after {
+        left: 0.85rem;
+        width: calc(100% - 1.7rem);
+      }
+    }
   }
 }
 
 .account {
   margin-left: auto;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
+  font-size: 0.9375rem;
+}
+
+.account__user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--gold-bright);
+  background: radial-gradient(circle at 30% 30%, var(--vellum-3), var(--ink));
+  border: 1px solid var(--rule-gold);
 }
 
 .account__name {
-  color: var(--ash);
-  font-style: italic;
+  color: var(--parchment-dim);
+}
+
+.account__link {
+  color: var(--parchment-dim);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--parchment);
+  }
+}
+
+.button.small {
+  min-height: 2.25rem;
+  padding: 0.35rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.menu-toggle {
+  display: none;
+  margin-left: auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.menu-toggle__bars,
+.menu-toggle__bars::before,
+.menu-toggle__bars::after {
+  display: block;
+  width: 1.15rem;
+  height: 1.5px;
+  margin: 0 auto;
+  background: var(--parchment);
+  transition:
+    transform 0.25s var(--ease),
+    opacity 0.2s;
+}
+
+.menu-toggle__bars {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  &::before {
+    top: -6px;
+  }
+
+  &::after {
+    top: 6px;
+  }
+}
+
+.open .menu-toggle__bars {
+  background: transparent;
+
+  &::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  &::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+}
+
+@media (max-width: 48rem) {
+  .topbar__inner {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem 0 0.5rem;
+  }
+
+  .open .menu {
+    display: flex;
+    animation: rise 0.2s var(--ease);
+  }
+
+  .menu nav {
+    flex-direction: column;
+
+    a {
+      padding: 0.75rem 0.5rem;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--rule-soft);
+
+      &.active::after {
+        left: 0.5rem;
+        width: 2rem;
+      }
+    }
+  }
+
+  .account {
+    margin-left: 0;
+    justify-content: space-between;
+  }
 }
 
 main {
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) 4rem;
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: clamp(1.75rem, 4vw, 3.25rem) var(--page-pad) 5rem;
 
   &:focus {
     outline: none;
   }
+}
+
+.footer {
+  border-top: 1px solid var(--rule-soft);
+  background: rgb(0 0 0 / 0.3);
+  font-size: 0.875rem;
+  color: var(--ash);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2.5rem;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 1.75rem var(--page-pad);
+
+  p {
+    flex: 1 1 22rem;
+    margin: 0;
+  }
+
+  nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  nav a {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ash);
+
+    &:hover {
+      color: var(--parchment);
+    }
+  }
+}
+
+.footer__brand {
+  font-family: var(--font-blackletter);
+  font-size: 1.5rem;
+  color: var(--parchment-dim);
 }

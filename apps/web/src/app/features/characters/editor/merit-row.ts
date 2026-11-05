@@ -41,8 +41,8 @@ let nextId = 0;
       grid-template-columns: auto minmax(0, 1fr) auto 2.5rem;
       align-items: center;
       gap: 0.25rem 0.6rem;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid var(--rule);
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--rule-soft);
     }
     input {
       accent-color: var(--oxblood);
@@ -54,8 +54,15 @@ let nextId = 0;
     }
     .info {
       width: 1.5rem;
+      height: 1.5rem;
+      border: 1px solid var(--rule-gold);
+      border-radius: 50%;
+      font-size: 0.8125rem;
       text-decoration: none;
-      color: var(--ash);
+      color: var(--gold);
+    }
+    input:checked + .name {
+      color: var(--gold-bright);
     }
     .cost {
       text-align: right;
@@ -69,7 +76,7 @@ let nextId = 0;
       color: var(--ash);
     }
     .note.error {
-      color: #f08a90;
+      color: var(--danger);
     }
   `,
 })

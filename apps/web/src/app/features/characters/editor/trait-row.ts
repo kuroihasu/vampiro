@@ -17,7 +17,14 @@ let nextId = 0;
       <div
         class="dots"
         role="group"
-        [attr.aria-label]="d.name + ': ' + total() + ' de ' + max()"
+        [attr.aria-label]="
+          d.name +
+          ': ' +
+          total() +
+          ' de ' +
+          max() +
+          (extra() ? ' (' + extra() + ' con gratuitos)' : '')
+        "
         [attr.aria-describedby]="reason() || errors().length ? reasonId : null"
       >
         @for (n of levels(); track n) {
@@ -25,7 +32,8 @@ let nextId = 0;
             type="button"
             class="dot"
             [class.filled]="n <= total()"
-            [class.fixed]="n <= minimum()"
+            [class.fixed]="n <= base()"
+            [class.extra]="n > total() - extra() && n <= total()"
             [disabled]="isDisabled(n)"
             [attr.aria-pressed]="n <= total()"
             [attr.aria-label]="n + (n === 1 ? ' punto' : ' puntos')"
@@ -56,6 +64,10 @@ export class TraitRow {
   protected readonly def = computed(() => this.store.trait(this.key()));
   protected readonly total = computed(() => this.store.total(this.key()));
   protected readonly minimum = computed(() => this.store.minimum(this.key()));
+  /** Puntos que vienen dados por la edición (p. ej. el 1 de cada atributo). */
+  protected readonly base = computed(() => this.def()?.base ?? 0);
+  /** Puntos comprados con gratuitos: se pintan los últimos y en oro. */
+  protected readonly extra = computed(() => this.store.freebieDots(this.key()));
   protected readonly max = computed(() => this.def()?.max ?? 5);
   protected readonly levels = computed(() => Array.from({ length: this.max() }, (_, i) => i + 1));
   protected readonly errors = computed(() => this.store.violationsFor(this.key()));
@@ -77,7 +89,11 @@ export class TraitRow {
 
   protected titleFor(n: number): string {
     const target = this.target(n);
-    if (target < this.minimum()) return 'Punto de base o comprado con gratuitos';
+    if (target < this.minimum()) {
+      return target < this.base()
+        ? 'Punto de base de la edición'
+        : 'Comprado con gratuitos: se devuelve en el paso de puntos gratuitos';
+    }
     return this.store.blockedReason(this.key(), target) ?? '';
   }
 

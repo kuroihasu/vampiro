@@ -1,4 +1,5 @@
 <section class="auth">
+  <span class="auth__sigil" aria-hidden="true"></span>
   <h1>Entrar</h1>
   <p class="muted">Con tu cuenta guardas tus fichas y entras en las salas de tu grupo.</p>
 
@@ -33,7 +34,7 @@
       <app-field-errors id="login-password-error" [field]="loginForm.password()" />
     </div>
 
-    <button type="submit" class="button" [disabled]="loginForm().submitting()">
+    <button type="submit" class="button block large" [disabled]="loginForm().submitting()">
       {{ loginForm().submitting() ? 'Entrando…' : 'Entrar' }}
     </button>
   </form>

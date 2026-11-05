@@ -13,7 +13,9 @@ describe('App', () => {
   it('muestra la navegación principal', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
-    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('nav a');
+    const links = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      'nav[aria-label="Principal"] a',
+    );
     expect(links.length).toBe(3);
   });
 
@@ -22,5 +24,19 @@ describe('App', () => {
     await fixture.whenStable();
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     expect(nav?.getAttribute('aria-label')).toBe('Principal');
+  });
+
+  it('abre y cierra el menú móvil', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const toggle = el.querySelector<HTMLButtonElement>('.menu-toggle')!;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
   });
 });
