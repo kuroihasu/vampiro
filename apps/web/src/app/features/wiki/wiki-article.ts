@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { WIKI_CATEGORIES, type WikiArticle } from '@vampiro/shared';
 import { ApiError, errorMessage } from '../../core/api-error';
+import { SessionStore } from '../../core/auth/session-store';
 import { Markdown } from '../../shared/markdown/markdown';
 import { TraitTooltip } from '../../shared/trait-tooltip';
 
@@ -15,6 +16,8 @@ import { TraitTooltip } from '../../shared/trait-tooltip';
 })
 export class WikiArticlePage {
   readonly slug = input.required<string>();
+  private readonly session = inject(SessionStore);
+  protected readonly isAdmin = computed(() => this.session.user()?.role === 'admin');
 
   protected readonly article = httpResource<WikiArticle>(
     () => `/api/v1/wiki/articles/${encodeURIComponent(this.slug())}`,

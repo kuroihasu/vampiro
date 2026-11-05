@@ -121,6 +121,23 @@ describe('Characters (e2e)', () => {
       expect(stored.body.sheet.traits).toEqual({});
     });
 
+    it('guarda méritos y defectos, y rechaza los que no cumplen requisitos', async () => {
+      const c = (await create().expect(201)).body as Character;
+      const ok = await save(c, {
+        sheet: { ...c.sheet, meritsFlaws: ['sentidos-agudos', 'pesadillas'] },
+      }).expect(200);
+      expect(ok.body.sheet.meritsFlaws).toEqual(['sentidos-agudos', 'pesadillas']);
+
+      const bad = await save(ok.body as Character, {
+        sheet: { ...c.sheet, clan: 'nosferatu', meritsFlaws: ['atractivo'] },
+      }).expect(422);
+      expect(bad.body.violations).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: 'REQUISITO_NO_CUMPLIDO', path: 'atractivo' }),
+        ]),
+      );
+    });
+
     it('responde 409 CONFLICTO_VERSION si otra pestaña guardó antes', async () => {
       const c = (await create().expect(201)).body as Character;
       await save(c, { name: 'Primera' }).expect(200);

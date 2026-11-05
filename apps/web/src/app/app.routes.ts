@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { adminGuard } from './core/auth/admin-guard';
 import { authGuard } from './core/auth/auth-guard';
 
 /* Cada área se carga con lazy loading por ruta. */
@@ -12,6 +13,18 @@ export const routes: Routes = [
     path: 'wiki',
     title: 'Wiki · Vampiro',
     loadComponent: () => import('./features/wiki/wiki').then((m) => m.Wiki),
+  },
+  {
+    path: 'wiki/nuevo',
+    title: 'Nuevo artículo · Wiki · Vampiro',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/wiki/wiki-editor').then((m) => m.WikiEditor),
+  },
+  {
+    path: 'wiki/:slug/editar',
+    title: 'Editar artículo · Wiki · Vampiro',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/wiki/wiki-editor').then((m) => m.WikiEditor),
   },
   {
     path: 'wiki/:slug',

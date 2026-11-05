@@ -73,6 +73,152 @@ const virtue = (key: string, name: string, summary: string): TraitDefinition => 
   max: 5,
 });
 
+const merit = (
+  key: string,
+  name: string,
+  cost: number,
+  summary: string,
+  requires?: TraitDefinition['requires'],
+): TraitDefinition => ({
+  key,
+  name,
+  category: 'merit',
+  cost,
+  summary,
+  ...(requires ? { requires } : {}),
+});
+
+const flaw = (
+  key: string,
+  name: string,
+  cost: number,
+  summary: string,
+  requires?: TraitDefinition['requires'],
+): TraitDefinition => ({
+  key,
+  name,
+  category: 'flaw',
+  cost,
+  summary,
+  ...(requires ? { requires } : {}),
+});
+
+/*
+ * Méritos y defectos: catálogo inicial con textos propios. Los costes son orientativos y
+ * deben revisarse contra el manual de V20.
+ */
+const MERITS_FLAWS: TraitDefinition[] = [
+  merit(
+    'sentidos-agudos',
+    'Sentidos agudos',
+    1,
+    'Uno de tus sentidos es mucho más fino de lo normal.',
+  ),
+  merit('ambidiestro', 'Ambidiestro', 1, 'Usas las dos manos con la misma soltura.'),
+  merit('linguista', 'Lingüista', 1, 'Hablas con fluidez varios idiomas.'),
+  merit(
+    'inofensivo',
+    'Aspecto inofensivo',
+    1,
+    'La gente no te ve como una amenaza hasta que es tarde.',
+    {
+      notClans: ['nosferatu'],
+    },
+  ),
+  merit('calculadora-mental', 'Calculadora mental', 1, 'Resuelves cuentas complejas de cabeza.', {
+    minTraits: { inteligencia: 3 },
+  }),
+  merit(
+    'reflejos-rapidos',
+    'Reflejos rápidos',
+    1,
+    'Reaccionas antes que nadie cuando estalla la violencia.',
+    {
+      minTraits: { destreza: 3 },
+    },
+  ),
+  merit(
+    'prestigio-de-clan',
+    'Prestigio de clan',
+    1,
+    'Tu clan recuerda algo que hiciste y te mira con respeto.',
+  ),
+  merit('atractivo', 'Atractivo', 2, 'Tu presencia física llama la atención allí donde vas.', {
+    notClans: ['nosferatu'],
+  }),
+  merit(
+    'sueno-ligero',
+    'Sueño ligero',
+    2,
+    'Despiertas con facilidad durante el día si algo va mal.',
+  ),
+  merit(
+    'sentido-del-peligro',
+    'Sentido del peligro',
+    2,
+    'Un escalofrío te avisa antes de una emboscada.',
+  ),
+  merit('memoria-eidetica', 'Memoria eidética', 2, 'Recuerdas con detalle lo que ves y oyes.'),
+  merit(
+    'afinidad-animal',
+    'Afinidad animal',
+    2,
+    'Los animales se calman y te siguen con facilidad.',
+    {
+      clans: ['gangrel', 'nosferatu'],
+    },
+  ),
+  merit(
+    'buena-reputacion',
+    'Buena reputación',
+    2,
+    'Tu nombre abre puertas en la sociedad vampírica.',
+  ),
+  merit(
+    'digestion-eficiente',
+    'Digestión eficiente',
+    3,
+    'Sacas más provecho de cada trago de sangre.',
+  ),
+  merit(
+    'voluntad-de-hierro',
+    'Voluntad de hierro',
+    3,
+    'Es muy difícil doblegar tu mente con poderes ajenos.',
+  ),
+
+  flaw(
+    'pesadillas',
+    'Pesadillas',
+    1,
+    'Tu letargo diurno está lleno de sueños que no te dejan descansar.',
+  ),
+  flaw('marca-distintiva', 'Marca distintiva', 1, 'Un rasgo físico hace que la gente te recuerde.'),
+  flaw('sueno-profundo', 'Sueño profundo', 1, 'Cuesta mucho despertarte durante el día.'),
+  flaw('vista-debil', 'Vista débil', 1, 'Sin ayuda, ves mal de lejos o de cerca.'),
+  flaw('sin-reflejo', 'Sin reflejo', 1, 'No apareces en espejos ni en superficies que reflejan.'),
+  flaw('fobia', 'Fobia', 2, 'Algo concreto te da un miedo irracional y difícil de controlar.'),
+  flaw('vengativo', 'Vengativo', 2, 'No olvidas una ofensa y te cuesta dejarla pasar.'),
+  flaw('cobardia', 'Cobardía', 2, 'Ante el peligro tu primer impulso es huir.'),
+  flaw('adiccion', 'Adicción', 2, 'Solo te sacia la sangre de quien está bajo cierta sustancia.'),
+  flaw('sed-constante', 'Sed constante', 2, 'Tienes hambre con más frecuencia que otros Vástagos.'),
+  flaw('infame', 'Infame', 2, 'Tu nombre va unido a un escándalo que nadie olvida.'),
+  flaw(
+    'presa-exclusiva',
+    'Presa exclusiva',
+    3,
+    'Solo puedes alimentarte de un tipo muy concreto de mortal.',
+  ),
+  flaw('enemigo', 'Enemigo', 3, 'Alguien poderoso quiere verte destruido.'),
+  flaw(
+    'vinculo-de-sangre',
+    'Vínculo de sangre',
+    3,
+    'Estás vinculado por la sangre a otro vampiro.',
+  ),
+  flaw('cazado', 'Cazado', 4, 'Un cazador conoce tu existencia y te sigue la pista.'),
+];
+
 export const V20_RULESET: Ruleset = {
   edition: 'v20',
   version: '2026.11.0',
@@ -198,6 +344,8 @@ export const V20_RULESET: Ruleset = {
     virtue('conciencia', 'Conciencia', 'Sentido moral; resiste la degeneración.'),
     virtue('autocontrol', 'Autocontrol', 'Dominio sobre la Bestia y el frenesí.'),
     virtue('coraje', 'Coraje', 'Valor ante el fuego, el sol y el miedo.'),
+
+    ...MERITS_FLAWS,
 
     // Derivados: se calculan de las virtudes y solo suben con puntos gratuitos
     {

@@ -1,9 +1,10 @@
 import type { CharacterSheet } from '../types/character.js';
 import type { RoomConfig } from '../types/room-config.js';
 import type { Ruleset } from '../types/ruleset.js';
+import type { TraitDefinition } from '../types/trait.js';
 import type { RuleViolation } from '../errors/violation.js';
 import { deriveStats } from './derived.js';
-import { findTrait, freebieDots } from './traits.js';
+import { findTrait, freebieDots, traitTotal } from './traits.js';
 
 export interface BudgetStatus {
   /** p. ej. "attribute.physical", "discipline", "freebies". */
@@ -203,10 +204,19 @@ export function evaluateSheet(
     }
   }
 
+  // Méritos y defectos: los méritos cuestan puntos gratuitos y los defectos los devuelven
+  const merits = evaluateMeritsFlaws(sheet, ruleset, options, violations);
+  if (merits.maxFlawPoints > 0 || merits.flawPoints > 0) {
+    budgets.push({ path: 'flaws', available: merits.maxFlawPoints, spent: merits.flawPoints });
+  }
+
   // Puntos gratuitos
   if (ruleset.freebies) {
-    const total = ruleset.freebies.total + (options.roomConfig?.extraFreebies ?? 0);
-    let spent = 0;
+    const total =
+      ruleset.freebies.total +
+      (options.roomConfig?.extraFreebies ?? 0) +
+      Math.min(merits.flawPoints, merits.maxFlawPoints);
+    let spent = merits.meritCost;
     for (const purchase of sheet.freebies) {
       const def = findTrait(ruleset, purchase.traitKey);
       if (!def) continue;
@@ -274,6 +284,103 @@ export function evaluateSheet(
   }
 
   return { budgets, violations, valid: !violations.some((v) => v.severity === 'error') };
+}
+
+interface MeritsFlawsResult {
+  meritCost: number;
+  flawPoints: number;
+  maxFlawPoints: number;
+}
+
+function evaluateMeritsFlaws(
+  sheet: CharacterSheet,
+  ruleset: Ruleset,
+  options: EvaluateOptions,
+  violations: RuleViolation[],
+): MeritsFlawsResult {
+  const roomMax = options.roomConfig?.maxFlawPoints;
+  const maxFlawPoints = Math.min(
+    ruleset.meritsFlaws?.maxFlawPoints ?? 0,
+    roomMax ?? Number.POSITIVE_INFINITY,
+  );
+  const result: MeritsFlawsResult = { meritCost: 0, flawPoints: 0, maxFlawPoints };
+  const seen = new Set<string>();
+
+  for (const key of sheet.meritsFlaws ?? []) {
+    const def = findTrait(ruleset, key);
+    if (!def || (def.category !== 'merit' && def.category !== 'flaw')) {
+      violations.push({
+        code: 'RASGO_DESCONOCIDO',
+        severity: 'error',
+        path: key,
+        message: `"${key}" no es un mérito ni un defecto de ${ruleset.edition.toUpperCase()}.`,
+      });
+      continue;
+    }
+    if (seen.has(key)) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: key,
+        message: `${def.name} ya está en la ficha.`,
+      });
+      continue;
+    }
+    seen.add(key);
+
+    if (options.roomConfig && !options.roomConfig.allowMeritsFlaws) {
+      violations.push({
+        code: 'MERITOS_DESACTIVADOS',
+        severity: 'error',
+        path: key,
+        message: `El master no permite méritos ni defectos en esta sala (${def.name}).`,
+      });
+    }
+    const unmet = unmetRequirement(def, sheet, ruleset);
+    if (unmet) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: key,
+        message: unmet,
+      });
+    }
+    if (def.category === 'merit') result.meritCost += def.cost ?? 0;
+    else result.flawPoints += def.cost ?? 0;
+  }
+
+  if (result.flawPoints > maxFlawPoints) {
+    violations.push({
+      code: 'PRESUPUESTO_EXCEDIDO',
+      severity: 'error',
+      path: 'flaws',
+      message: `Tienes ${result.flawPoints} puntos de defectos; el máximo es ${maxFlawPoints}.`,
+    });
+  }
+  return result;
+}
+
+/** Motivo por el que no se cumple el requisito de un mérito o defecto, o undefined. */
+export function unmetRequirement(
+  def: TraitDefinition,
+  sheet: CharacterSheet,
+  ruleset: Ruleset,
+): string | undefined {
+  const req = def.requires;
+  if (!req) return undefined;
+  const clanName = (key: string) => ruleset.clans.find((c) => c.key === key)?.name ?? key;
+  if (req.clans && !(sheet.clan && req.clans.includes(sheet.clan))) {
+    return `${def.name} es solo para ${req.clans.map(clanName).join(' o ')}.`;
+  }
+  if (req.notClans && sheet.clan && req.notClans.includes(sheet.clan)) {
+    return `Un ${clanName(sheet.clan)} no puede tener ${def.name}.`;
+  }
+  for (const [key, min] of Object.entries(req.minTraits ?? {})) {
+    if (traitTotal(sheet, ruleset, key) < min) {
+      return `${def.name} exige ${findTrait(ruleset, key)?.name ?? key} ${min} o más.`;
+    }
+  }
+  return undefined;
 }
 
 function checkRoomConfig(

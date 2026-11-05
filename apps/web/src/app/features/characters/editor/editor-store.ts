@@ -163,6 +163,21 @@ export class EditorStore {
     this.apply(this.withFreebie(key, delta));
   }
 
+  hasMeritFlaw(key: string): boolean {
+    return this.sheet().meritsFlaws?.includes(key) ?? false;
+  }
+
+  /** Motivo por el que no se puede añadir el mérito o defecto (quitarlo siempre se puede). */
+  meritFlawReason(key: string): string | undefined {
+    if (this.hasMeritFlaw(key)) return undefined;
+    return this.reasonFor(this.withMeritFlaw(key));
+  }
+
+  toggleMeritFlaw(key: string): void {
+    if (this.meritFlawReason(key)) return;
+    this.apply(this.withMeritFlaw(key));
+  }
+
   async save(): Promise<boolean> {
     const character = this.character();
     if (!character) return false;
@@ -227,6 +242,15 @@ export class EditorStore {
     if (dots > 0) traits[key] = dots;
     else delete traits[key];
     return { ...sheet, traits };
+  }
+
+  private withMeritFlaw(key: string): CharacterSheet {
+    const sheet = this.sheet();
+    const current = sheet.meritsFlaws ?? [];
+    const meritsFlaws = current.includes(key)
+      ? current.filter((k) => k !== key)
+      : [...current, key];
+    return { ...sheet, meritsFlaws };
   }
 
   private withFreebie(key: string, delta: number): CharacterSheet {

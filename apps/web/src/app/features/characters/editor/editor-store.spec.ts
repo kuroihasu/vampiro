@@ -123,6 +123,37 @@ describe('EditorStore', () => {
     });
   });
 
+  describe('méritos y defectos', () => {
+    it('un mérito cuesta gratuitos y un defecto los devuelve', () => {
+      store.toggleMeritFlaw('sentidos-agudos');
+      expect(store.budget('freebies')).toMatchObject({ available: 15, spent: 1 });
+      store.toggleMeritFlaw('fobia');
+      expect(store.budget('freebies')?.available).toBe(17);
+      expect(store.budget('flaws')).toMatchObject({ available: 7, spent: 2 });
+      expect(store.hasMeritFlaw('fobia')).toBe(true);
+    });
+
+    it('quitarlo devuelve los puntos', () => {
+      store.toggleMeritFlaw('sentidos-agudos');
+      store.toggleMeritFlaw('sentidos-agudos');
+      expect(store.hasMeritFlaw('sentidos-agudos')).toBe(false);
+      expect(store.budget('freebies')?.spent).toBe(0);
+    });
+
+    it('explica por qué no se puede tomar y no lo aplica', () => {
+      store.setClan('nosferatu');
+      expect(store.meritFlawReason('atractivo')).toContain('Nosferatu');
+      store.toggleMeritFlaw('atractivo');
+      expect(store.hasMeritFlaw('atractivo')).toBe(false);
+    });
+
+    it('no deja pasar de 7 puntos de defectos', () => {
+      store.toggleMeritFlaw('cazado'); // 4
+      store.toggleMeritFlaw('enemigo'); // 3 → 7
+      expect(store.meritFlawReason('pesadillas')).toContain('máximo es 7');
+    });
+  });
+
   describe('guardar', () => {
     it('envía la ficha con la versión y guarda la nueva', async () => {
       store.setTotal('fuerza', 2);

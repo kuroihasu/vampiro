@@ -17,6 +17,7 @@ import { TraitTooltip } from '../../../shared/trait-tooltip';
 import { FieldErrors } from '../../auth/field-errors';
 import { EditorStore } from './editor-store';
 import { FreebieRow } from './freebie-row';
+import { MeritRow } from './merit-row';
 import { TraitRow } from './trait-row';
 
 const STEPS = [
@@ -25,6 +26,7 @@ const STEPS = [
   { id: 'atributos', label: 'Atributos' },
   { id: 'habilidades', label: 'Habilidades' },
   { id: 'ventajas', label: 'Ventajas' },
+  { id: 'meritos', label: 'Méritos y defectos' },
   { id: 'gratuitos', label: 'Puntos gratuitos' },
 ] as const;
 
@@ -40,6 +42,7 @@ const PRIORITY_NAMES = ['Primaria', 'Secundaria', 'Terciaria'];
     FieldErrors,
     TraitRow,
     FreebieRow,
+    MeritRow,
     TraitTooltip,
   ],
   providers: [EditorStore],
@@ -118,6 +121,8 @@ export class CharacterEditor {
   protected readonly derivedKeys = computed(() => this.keysOf('other'));
   protected readonly allAttributes = computed(() => this.keysOf('attribute'));
   protected readonly allAbilities = computed(() => this.keysOf('ability'));
+  protected readonly merits = computed(() => this.keysOf('merit'));
+  protected readonly flaws = computed(() => this.keysOf('flaw'));
 
   /** Contadores del resumen, en el orden de los pasos. */
   protected readonly counters = computed(() => {
@@ -128,6 +133,7 @@ export class CharacterEditor {
         b.groups.map((g) => ({ path: `${b.category}.${g}`, label: b.groupLabels[g] ?? g })),
       ),
       ...ruleset.creation.fixed.map((b) => ({ path: b.category, label: b.label })),
+      ...(ruleset.meritsFlaws ? [{ path: 'flaws', label: 'Puntos de defectos' }] : []),
       { path: 'freebies', label: 'Puntos gratuitos' },
     ];
     return items.map((i) => ({ ...i, budget: this.store.budget(i.path) }));

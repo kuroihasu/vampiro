@@ -109,3 +109,16 @@
     letter-spacing: 0.02em;
   }
 }
+
+.results__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  max-width: 40rem;
+
+  .button {
+    text-decoration: none;
+  }
+}

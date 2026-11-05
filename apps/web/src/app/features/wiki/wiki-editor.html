@@ -1,0 +1,117 @@
+<p class="back"><a routerLink="/wiki">Volver a la wiki</a></p>
+<h1>{{ isNew() ? 'Nuevo artículo' : 'Editar artículo' }}</h1>
+
+@if (error(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">Cargando el artículo…</p>
+} @else {
+  <form class="editor" novalidate (submit)="onSubmit($event)">
+    <div class="meta">
+      <div class="field">
+        <label for="we-title">Título</label>
+        <input
+          id="we-title"
+          type="text"
+          [formField]="articleForm.title"
+          aria-describedby="we-title-error"
+        />
+        <app-field-errors id="we-title-error" [field]="articleForm.title()" />
+      </div>
+      <div class="field">
+        <label for="we-slug">Slug</label>
+        <input
+          id="we-slug"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          [formField]="articleForm.slug"
+          aria-describedby="we-slug-hint we-slug-error"
+        />
+        <span id="we-slug-hint" class="field__hint"
+          >La dirección será /wiki/{{ model().slug || 'slug' }}</span
+        >
+        <app-field-errors id="we-slug-error" [field]="articleForm.slug()" />
+      </div>
+      <div class="field">
+        <label for="we-category">Categoría</label>
+        <select id="we-category" [formField]="articleForm.category">
+          @for (c of categories; track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <fieldset class="field editions">
+        <legend>Ediciones</legend>
+        @for (e of editions; track e.id) {
+          <label>
+            <input
+              type="checkbox"
+              [checked]="model().editions.includes(e.id)"
+              (change)="toggleEdition(e.id, $event)"
+            />
+            {{ e.name }}
+          </label>
+        }
+        @if (articleForm.editions().errors()[0]; as err) {
+          <span class="field__error">{{ err.message }}</span>
+        }
+      </fieldset>
+      <div class="field">
+        <label for="we-trait">Rasgo de la ficha (opcional)</label>
+        <select id="we-trait" [formField]="articleForm.traitKey">
+          <option value="">Ninguno</option>
+          @for (t of traits(); track t.key) {
+            <option [value]="t.key">{{ t.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="write">
+      <div class="field">
+        <label for="we-body">Texto (Markdown)</label>
+        <textarea
+          id="we-body"
+          rows="20"
+          spellcheck="true"
+          [formField]="articleForm.bodyMarkdown"
+          aria-describedby="we-body-hint we-body-error"
+        ></textarea>
+        <span id="we-body-hint" class="field__hint">
+          Enlaza un rasgo con [Celeridad](rasgo:celeridad) y otro artículo con
+          [Brujah](/wiki/clan-brujah).
+        </span>
+        <app-field-errors id="we-body-error" [field]="articleForm.bodyMarkdown()" />
+      </div>
+      <section class="preview" aria-labelledby="we-preview-title">
+        <h2 id="we-preview-title" class="preview__title">Vista previa</h2>
+        <h1>{{ model().title || 'Sin título' }}</h1>
+        <app-markdown [source]="model().bodyMarkdown" />
+      </section>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="button" [disabled]="articleForm().submitting()">
+        {{ isNew() ? 'Publicar artículo' : 'Guardar cambios' }}
+      </button>
+      @if (!isNew()) {
+        @if (confirmDelete()) {
+          <span class="confirm">
+            ¿Borrar el artículo para siempre?
+            <button type="button" class="link-button danger" (click)="remove()">Borrar</button>
+            <button type="button" class="link-button" (click)="confirmDelete.set(false)">
+              Cancelar
+            </button>
+          </span>
+        } @else {
+          <button type="button" class="link-button" (click)="confirmDelete.set(true)">
+            Borrar artículo
+          </button>
+        }
+      }
+    </div>
+  </form>
+}

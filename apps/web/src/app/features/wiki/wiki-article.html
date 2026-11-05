@@ -1,4 +1,9 @@
-<p class="back"><a routerLink="/wiki">Volver a la wiki</a></p>
+<p class="back">
+  <a routerLink="/wiki">Volver a la wiki</a>
+  @if (isAdmin() && article.hasValue()) {
+    <a class="edit" [routerLink]="['/wiki', article.value().slug, 'editar']">Editar artículo</a>
+  }
+</p>
 
 @if (notFound()) {
   <h1>Este artículo no existe</h1>

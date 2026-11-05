@@ -14,6 +14,7 @@
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @vampiro/api db:migrate",
     "db:seed": "pnpm --filter @vampiro/api db:seed",
+    "db:admin": "pnpm --filter @vampiro/api db:admin",
     "dev:shared": "pnpm --filter @vampiro/shared dev",
     "dev:api": "pnpm --filter @vampiro/api start:dev",
     "dev:web": "pnpm --filter @vampiro/web start",
