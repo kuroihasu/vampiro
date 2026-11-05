@@ -168,6 +168,11 @@ export function evaluateSheet(
     }
   }
 
+  // Caminos (Edad Oscura): hay que elegir uno y solo se usan sus virtudes
+  if (ruleset.roads) {
+    evaluateRoad(sheet, ruleset, unspentSeverity, violations);
+  }
+
   // Presupuestos por patrón (V5: atributos 4/3/3/3/2/2/2/2/1, habilidades, disciplinas)
   const clan = ruleset.clans.find((c) => c.key === sheet.clan);
   for (const budget of ruleset.creation.patterns ?? []) {
@@ -454,6 +459,47 @@ function evaluateSpecialties(
       path: 'specialties',
       message: `${names} necesita${missing.length > 1 ? 'n' : ''} una especialidad.`,
     });
+  }
+}
+
+function evaluateRoad(
+  sheet: CharacterSheet,
+  ruleset: Ruleset,
+  unspentSeverity: 'error' | 'warning',
+  violations: RuleViolation[],
+): void {
+  const rules = ruleset.roads;
+  if (!rules) return;
+  if (!sheet.road) {
+    violations.push({
+      code: 'REQUISITO_NO_CUMPLIDO',
+      severity: unspentSeverity,
+      path: 'road',
+      message: 'Elige el Camino que sigue tu personaje.',
+    });
+    return;
+  }
+  const road = rules.options.find((r) => r.key === sheet.road);
+  if (!road) {
+    violations.push({
+      code: 'RASGO_DESCONOCIDO',
+      severity: 'error',
+      path: 'road',
+      message: `"${sheet.road}" no es un Camino de ${ruleset.edition}.`,
+    });
+    return;
+  }
+  const usable = new Set([...road.virtues, ...rules.sharedVirtues]);
+  for (const t of ruleset.catalog.filter((t) => t.category === 'virtue')) {
+    const dots = (sheet.traits[t.key] ?? 0) + freebieDots(sheet, t.key);
+    if (dots > 0 && !usable.has(t.key)) {
+      violations.push({
+        code: 'REQUISITO_NO_CUMPLIDO',
+        severity: 'error',
+        path: t.key,
+        message: `${t.name} no es una virtud del ${road.name}.`,
+      });
+    }
   }
 }
 

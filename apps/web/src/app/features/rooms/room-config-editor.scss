@@ -1,14 +1,15 @@
 fieldset {
   border: 0;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--rule-soft);
   margin: 0 0 1.5rem;
   padding: 1rem 0 0;
 }
 
 legend {
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.0625rem;
-  padding: 0 0.5rem 0 0;
+  font-size: 1.35rem;
+  padding: 0 0.75rem 0 0;
 }
 
 .hint {
@@ -22,8 +23,8 @@ legend {
 
   th,
   td {
-    padding: 0.3rem 0;
-    border-bottom: 1px solid var(--rule);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--rule-soft);
   }
 
   thead th {
@@ -49,7 +50,7 @@ legend {
 
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--oxblood);
+  accent-color: var(--blood);
   width: 1.1rem;
   height: 1.1rem;
 }
@@ -86,10 +87,6 @@ input[type='radio'] {
   }
 
   input {
-    padding: 0.45rem 0.6rem;
-    background: var(--ink);
-    border: 1px solid var(--rule);
-    border-bottom: 2px solid var(--ash);
     width: 100%;
   }
 }

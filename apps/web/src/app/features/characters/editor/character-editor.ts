@@ -30,6 +30,22 @@ const STEPS = [
   { id: 'gratuitos', label: 'Puntos gratuitos' },
 ] as const;
 
+type StepId = (typeof STEPS)[number]['id'];
+
+const STEP_BY_CATEGORY: Record<string, StepId> = {
+  attribute: 'atributos',
+  ability: 'habilidades',
+  discipline: 'ventajas',
+  background: 'ventajas',
+  virtue: 'ventajas',
+  merit: 'meritos',
+  flaw: 'meritos',
+};
+
+function stepOf(category: string): StepId {
+  return STEP_BY_CATEGORY[category] ?? 'gratuitos';
+}
+
 const PRIORITY_NAMES = ['Primaria', 'Secundaria', 'Terciaria'];
 
 /** Editor por pasos de una ficha. Todo el cálculo vive en EditorStore. */
@@ -46,6 +62,11 @@ const PRIORITY_NAMES = ['Primaria', 'Secundaria', 'Terciaria'];
     TraitTooltip,
   ],
   providers: [EditorStore],
+  host: {
+    '(document:keydown.control.s)': 'onSaveShortcut($event)',
+    '(document:keydown.meta.s)': 'onSaveShortcut($event)',
+    '(window:beforeunload)': 'onBeforeUnload($event)',
+  },
   templateUrl: './character-editor.html',
   styleUrl: './character-editor.scss',
 })
@@ -55,11 +76,16 @@ export class CharacterEditor {
   protected readonly store = inject(EditorStore);
   private readonly rules = inject(RulesService);
 
-  /** Pasos según la edición: sin puntos gratuitos (V5) no hay paso de gratuitos. */
+  /** Pasos según la edición: sin gratuitos (V5) o sin méritos (Edad Oscura, de momento) se omiten. */
   protected readonly steps = computed(() =>
-    STEPS.filter((s) => s.id !== 'gratuitos' || !!this.store.ruleset()?.freebies),
+    STEPS.filter((s) => {
+      const ruleset = this.store.ruleset();
+      if (s.id === 'gratuitos') return !!ruleset?.freebies;
+      if (s.id === 'meritos') return !!ruleset?.meritsFlaws;
+      return true;
+    }),
   );
-  protected readonly step = signal<(typeof STEPS)[number]['id']>('concepto');
+  protected readonly step = signal<StepId>('concepto');
   protected readonly priorityNames = PRIORITY_NAMES;
 
   protected readonly loaded = httpResource<Character>(
@@ -171,29 +197,123 @@ export class CharacterEditor {
 
   protected readonly clanDisciplines = computed(() => this.clan()?.disciplines ?? []);
   protected readonly backgrounds = computed(() => this.keysOf('background'));
-  protected readonly virtues = computed(() => this.keysOf('virtue'));
+  /** Con Caminos (Edad Oscura), solo las virtudes del Camino elegido. */
+  protected readonly virtues = computed(() =>
+    this.store.ruleset()?.roads ? this.store.usableVirtues() : this.keysOf('virtue'),
+  );
+  protected readonly roads = computed(() => this.store.ruleset()?.roads?.options ?? []);
+  protected readonly moralityTrait = computed(
+    () => this.store.ruleset()?.derived?.humanity.traitKey ?? 'humanidad',
+  );
   protected readonly derivedKeys = computed(() => this.keysOf('other'));
   protected readonly allAttributes = computed(() => this.keysOf('attribute'));
   protected readonly allAbilities = computed(() => this.keysOf('ability'));
   protected readonly merits = computed(() => this.keysOf('merit'));
   protected readonly flaws = computed(() => this.keysOf('flaw'));
 
-  /** Contadores del resumen, en el orden de los pasos. */
+  /** Contadores del resumen, en el orden de los pasos, con el paso al que pertenece cada uno. */
   protected readonly counters = computed(() => {
     const ruleset = this.store.ruleset();
     if (!ruleset) return [];
     const items = [
       ...ruleset.creation.priorities.flatMap((b) =>
-        b.groups.map((g) => ({ path: `${b.category}.${g}`, label: b.groupLabels[g] ?? g })),
+        b.groups.map((g) => ({
+          path: `${b.category}.${g}`,
+          label: b.groupLabels[g] ?? g,
+          step: stepOf(b.category),
+        })),
       ),
-      ...(ruleset.creation.patterns ?? []).map((p) => ({ path: p.key, label: p.label })),
-      ...ruleset.creation.fixed.map((b) => ({ path: b.category, label: b.label })),
-      ...(ruleset.specialties ? [{ path: 'specialties', label: 'Especialidades' }] : []),
-      ...(ruleset.meritsFlaws ? [{ path: 'flaws', label: 'Puntos de defectos' }] : []),
-      ...(ruleset.freebies ? [{ path: 'freebies', label: 'Puntos gratuitos' }] : []),
+      ...(ruleset.creation.patterns ?? []).map((p) => ({
+        path: p.key,
+        label: p.label,
+        step: stepOf(p.category),
+      })),
+      ...ruleset.creation.fixed.map((b) => ({
+        path: b.category,
+        label: b.label,
+        step: stepOf(b.category),
+      })),
+      ...(ruleset.specialties
+        ? [{ path: 'specialties', label: 'Especialidades', step: 'habilidades' as StepId }]
+        : []),
+      ...(ruleset.meritsFlaws
+        ? [{ path: 'flaws', label: 'Puntos de defectos', step: 'meritos' as StepId }]
+        : []),
+      ...(ruleset.freebies
+        ? [{ path: 'freebies', label: 'Puntos gratuitos', step: 'gratuitos' as StepId }]
+        : []),
     ];
-    return items.map((i) => ({ ...i, budget: this.store.budget(i.path) }));
+    return items.map((i) => {
+      const budget = this.store.budget(i.path);
+      const spent = budget?.spent ?? 0;
+      const available = budget?.available ?? 0;
+      return {
+        ...i,
+        budget,
+        over: spent > available,
+        full: available > 0 && spent === available,
+        percent: available > 0 ? Math.min(100, Math.round((spent / available) * 100)) : 0,
+      };
+    });
   });
+
+  /**
+   * Estado de cada paso para el índice: hecho (todos sus puntos repartidos), con error
+   * (algún presupuesto pasado o un problema de reglas) o pendiente.
+   */
+  protected readonly stepStates = computed(() => {
+    const counters = this.counters();
+    const states: Partial<Record<StepId, 'done' | 'error' | 'todo'>> = {};
+    for (const s of this.steps()) {
+      const own = counters.filter((c) => c.step === s.id && (c.budget?.available ?? 0) > 0);
+      let state: 'done' | 'error' | 'todo' = 'todo';
+      if (s.id === 'concepto') state = this.store.meta().name.trim() ? 'done' : 'todo';
+      else if (s.id === 'clan') state = this.store.sheet().clan ? 'done' : 'todo';
+      else if (own.some((c) => c.over || this.store.violationsFor(c.path).length > 0))
+        state = 'error';
+      else if (own.length && own.every((c) => c.full)) state = 'done';
+      states[s.id] = state;
+    }
+    return states;
+  });
+
+  protected readonly progress = computed(() => {
+    const steps = this.steps();
+    const done = steps.filter((s) => this.stepStates()[s.id] === 'done').length;
+    return { done, total: steps.length, percent: Math.round((done / steps.length) * 100) };
+  });
+
+  protected readonly stepIndex = computed(() =>
+    this.steps().findIndex((s) => s.id === this.step()),
+  );
+  protected readonly prevStep = computed(() => this.steps()[this.stepIndex() - 1]);
+  protected readonly nextStep = computed(() => this.steps()[this.stepIndex() + 1]);
+
+  /** Cambia de paso y lleva la vista al principio del panel. */
+  protected goTo(id: StepId): void {
+    this.step.set(id);
+    if (typeof document === 'undefined') return;
+    const panel = document.getElementById('panel-ficha');
+    if (panel && panel.getBoundingClientRect().top < 0) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  protected readonly canSave = computed(
+    () => !this.store.saving() && this.store.dirty() && !this.metaForm().invalid(),
+  );
+
+  /** Ctrl+S / ⌘+S guarda la ficha en vez de abrir el diálogo del navegador. */
+  protected onSaveShortcut(event: Event): void {
+    if (!this.store.character()) return;
+    event.preventDefault();
+    if (this.canSave()) void this.save();
+  }
+
+  /** Aviso del navegador si se cierra la pestaña con cambios sin guardar. */
+  protected onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.store.dirty()) event.preventDefault();
+  }
 
   protected readonly notice = signal<string | undefined>(undefined);
 

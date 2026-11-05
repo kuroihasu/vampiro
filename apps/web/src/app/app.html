@@ -1,22 +1,61 @@
 <a class="skip" href="#contenido">Saltar al contenido</a>
-<header class="topbar">
-  <a routerLink="/" class="brand">Vampiro</a>
-  <nav aria-label="Principal">
-    <a routerLink="/wiki" routerLinkActive="active" ariaCurrentWhenActive="page">Wiki</a>
-    <a routerLink="/personajes" routerLinkActive="active" ariaCurrentWhenActive="page"
-      >Personajes</a
+<header class="topbar" [class.open]="menuOpen()">
+  <div class="topbar__inner">
+    <a routerLink="/" class="brand" aria-label="Vampiro, ir a la portada">
+      <span class="brand__drop" aria-hidden="true"></span>
+      <span class="brand__name">Vampiro</span>
+    </a>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="menu-principal"
+      (click)="menuOpen.set(!menuOpen())"
     >
-    <a routerLink="/salas" routerLinkActive="active" ariaCurrentWhenActive="page">Salas</a>
-  </nav>
-  <div class="account">
-    @if (session.user(); as user) {
-      <span class="account__name">{{ user.displayName }}</span>
-      <button type="button" class="link-button" (click)="logout()">Salir</button>
-    } @else {
-      <a routerLink="/entrar" routerLinkActive="active" ariaCurrentWhenActive="page">Entrar</a>
-    }
+      <span class="visually-hidden">{{ menuOpen() ? 'Cerrar menú' : 'Abrir menú' }}</span>
+      <span class="menu-toggle__bars" aria-hidden="true"></span>
+    </button>
+
+    <div class="menu" id="menu-principal">
+      <nav aria-label="Principal">
+        <a routerLink="/wiki" routerLinkActive="active" ariaCurrentWhenActive="page">Wiki</a>
+        <a routerLink="/personajes" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Personajes</a
+        >
+        <a routerLink="/salas" routerLinkActive="active" ariaCurrentWhenActive="page">Salas</a>
+      </nav>
+      <div class="account">
+        @if (session.user(); as user) {
+          <span class="account__user">
+            <span class="avatar" aria-hidden="true">{{ initial() }}</span>
+            <span class="account__name">{{ user.displayName }}</span>
+          </span>
+          <button type="button" class="link-button" (click)="logout()">Salir</button>
+        } @else {
+          <a routerLink="/entrar" class="account__link">Entrar</a>
+          <a routerLink="/registro" class="button small">Crear cuenta</a>
+        }
+      </div>
+    </div>
   </div>
 </header>
 <main id="contenido" tabindex="-1">
-  <router-outlet />
+  <div class="page-enter">
+    <router-outlet />
+  </div>
 </main>
+<footer class="footer">
+  <div class="footer__inner">
+    <span class="footer__brand">Vampiro</span>
+    <p>
+      Herramienta de fans para jugar a Vampiro: la Mascarada. Los textos son resúmenes propios; el
+      juego y sus marcas pertenecen a sus dueños.
+    </p>
+    <nav aria-label="Pie de página">
+      <a routerLink="/wiki">Wiki</a>
+      <a routerLink="/personajes">Personajes</a>
+      <a routerLink="/salas">Salas</a>
+    </nav>
+  </div>
+</footer>

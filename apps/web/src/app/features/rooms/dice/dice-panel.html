@@ -117,6 +117,14 @@
   <div class="preview" aria-live="polite">
     @if (preview.hasValue()) {
       @let p = preview.value();
+      <div class="pool-dice" aria-hidden="true">
+        @for (i of range(p.dice); track $index) {
+          <span class="mini-die" [class.hunger]="$index >= p.dice - (p.hungerDice ?? 0)"></span>
+        }
+        @if (p.dice > 20) {
+          <span class="more">+{{ p.dice - 20 }}</span>
+        }
+      </div>
       <p class="pool">
         <span class="count">{{ p.dice }}</span>
         {{ p.dice === 1 ? 'dado' : 'dados' }}
@@ -143,7 +151,11 @@
     <p class="alert" role="alert">{{ message }}</p>
   }
 
-  <button type="submit" class="button" [disabled]="!preview.hasValue() || rolling()">
+  <button
+    type="submit"
+    class="button large block roll-button"
+    [disabled]="!preview.hasValue() || rolling()"
+  >
     {{ rolling() ? 'Tirando…' : 'Tirar' }}
   </button>
 </form>

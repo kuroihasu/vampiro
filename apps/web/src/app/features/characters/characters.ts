@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, type ElementRef, inject, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -11,6 +11,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { errorMessage } from '../../core/api-error';
 import { CharactersApi } from '../../core/characters-api';
+import { EDITION_SHORT } from '../../shared/edition-label';
 import { FieldErrors } from '../auth/field-errors';
 
 /** Mis fichas, agrupadas por edición, y el formulario para empezar una nueva. */
@@ -26,6 +27,8 @@ export class Characters {
 
   protected readonly list = httpResource<CharacterSummary[]>(() => '/api/v1/characters');
   protected readonly availableEditions = EDITIONS.filter((e) => e.available);
+  protected readonly short = EDITION_SHORT;
+  private readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('nameInput');
 
   protected readonly groups = computed(() => {
     if (!this.list.hasValue()) return [];
@@ -48,6 +51,14 @@ export class Characters {
   });
   protected readonly error = signal<string | undefined>(undefined);
   protected readonly confirming = signal<string | undefined>(undefined);
+
+  protected setEdition(edition: EditionId): void {
+    this.model.update((m) => ({ ...m, edition }));
+  }
+
+  protected focusName(): void {
+    this.nameInput()?.nativeElement.focus();
+  }
 
   protected onCreate(event: Event): void {
     event.preventDefault();

@@ -1,18 +1,52 @@
 /*
- * Estética de grimorio: tinta marrón, pergamino, sangre seca y oro deslustrado.
- * Una sola nota audaz (el nombre en blackletter); el resto es una serif de lectura.
+ * Sistema de diseño «Grimorio de sangre».
+ *
+ * Noche cálida casi negra, pergamino para el texto, sangre para la acción y oro deslustrado
+ * para los detalles. Tres voces tipográficas: blackletter para la marca, Cormorant para los
+ * titulares (romántica, de capitular) y Literata para leer.
  */
 :root {
-  --ink: #17100f;
-  --vellum: #221816;
-  --rule: #3a2a26;
-  --parchment: #e9dfd0;
-  --ash: #a8998c;
-  --oxblood: #8c1c24;
-  --gold: #c9a45c;
+  /* Superficies, de la más profunda a la más elevada */
+  --night: #0b0708;
+  --ink: #120c0d;
+  --vellum: #1b1314;
+  --vellum-2: #241a1b;
+  --vellum-3: #2e2223;
 
+  /* Líneas */
+  --rule: #3a2a28;
+  --rule-soft: rgb(201 164 92 / 0.12);
+  --rule-gold: rgb(201 164 92 / 0.35);
+
+  /* Texto */
+  --parchment: #ede3d3;
+  --parchment-dim: #cbbfae;
+  --ash: #9d8f83;
+
+  /* Acento */
+  --oxblood: #8c1c24;
+  --blood: #b3202d;
+  --blood-bright: #d63242;
+  --blood-glow: rgb(179 32 45 / 0.35);
+  --gold: #c9a45c;
+  --gold-bright: #e2c27e;
+  --danger: #f08a90;
+  --ok: #9cc59a;
+
+  /* Tipografía */
   --font-text: 'Literata', Georgia, 'Times New Roman', serif;
-  --font-blackletter: 'UnifrakturMaguntia', var(--font-text);
+  --font-display: 'Cormorant Garamond', 'Literata', Georgia, serif;
+  --font-blackletter: 'UnifrakturMaguntia', var(--font-display);
+
+  /* Forma */
+  --radius: 3px;
+  --radius-lg: 6px;
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 6px 18px rgb(0 0 0 / 0.35);
+  --shadow-2: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 18px 48px rgb(0 0 0 / 0.55);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --page-pad: clamp(1rem, 4vw, 3rem);
+  --page-max: 84rem;
 
   color-scheme: dark;
 }
@@ -23,44 +57,96 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-text);
   font-size: 1.0625rem;
   line-height: 1.6;
-  background: var(--ink);
   color: var(--parchment);
   font-optical-sizing: auto;
+  font-variant-numeric: lining-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-color: var(--night);
+  /* Un resplandor de sangre en lo alto y viñeta en los bordes. */
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgb(140 28 36 / 0.28), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgb(201 164 92 / 0.06), transparent 70%),
+    linear-gradient(180deg, var(--ink) 0%, var(--night) 60%);
+  background-attachment: fixed;
+}
+
+/* Grano de papel: ruido SVG muy tenue sobre toda la página. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+app-root {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--blood);
+  color: var(--parchment);
 }
 
 a {
   color: var(--gold);
   text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s var(--ease);
+
+  &:hover {
+    color: var(--gold-bright);
+  }
 }
 
 h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-display);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 1.5em 0 0.5em;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  font-size: clamp(2.4rem, 1.6rem + 3vw, 3.75rem);
   font-weight: 500;
   margin-top: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
 }
 
 h3 {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 :focus-visible {
@@ -70,10 +156,205 @@ h3 {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
 }
+
+/* Barras de desplazamiento discretas */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vellum-3) transparent;
+}
+
+/* ─────────────── Piezas de página ─────────────── */
+
+/* Antetítulo en versalitas, encima de un h1 o de una sección */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+
+  &::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+}
+
+/* Cabecera de página: antetítulo + título + entradilla */
+.page-head {
+  margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
+
+  h1 {
+    margin-bottom: 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--parchment-dim);
+  }
+}
+
+/* Separador ornamental: línea — rombo — línea */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--gold);
+  margin: 2.5rem 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rule-gold), transparent);
+  }
+
+  span {
+    width: 0.45rem;
+    height: 0.45rem;
+    transform: rotate(45deg);
+    border: 1px solid currentColor;
+  }
+}
+
+.back {
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ash);
+    text-decoration: none;
+
+    &::before {
+      content: '←';
+      transition: transform 0.2s var(--ease);
+    }
+
+    &:hover {
+      color: var(--parchment);
+
+      &::before {
+        transform: translateX(-3px);
+      }
+    }
+  }
+}
+
+/* Tarjeta: superficie elevada con filete dorado muy tenue */
+.card,
+.box {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, var(--vellum-2), var(--vellum));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+
+  > h2:first-child,
+  > h3:first-child {
+    margin-top: 0;
+  }
+}
+
+/* Variante con filete de sangre arriba (formularios laterales) */
+.box,
+.card--accent {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 2px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: linear-gradient(90deg, transparent, var(--blood), transparent);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin: 0 0 0.75rem;
+  }
+}
+
+/* Etiqueta pequeña: edición, estado, rol */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+  background: rgb(0 0 0 / 0.25);
+  white-space: nowrap;
+  line-height: 1.6;
+
+  &--gold {
+    color: var(--gold);
+    border-color: var(--rule-gold);
+  }
+
+  &--blood {
+    color: #f3b1b6;
+    border-color: rgb(179 32 45 / 0.6);
+    background: rgb(140 28 36 / 0.22);
+  }
+
+  &--ok {
+    color: var(--ok);
+    border-color: rgb(156 197 154 / 0.35);
+  }
+
+  &--dim {
+    color: var(--ash);
+  }
+}
+
+/* Estado vacío: ilustración tipográfica + texto + acción */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius-lg);
+  color: var(--ash);
+  background: rgb(0 0 0 / 0.15);
+
+  &__sigil {
+    font-family: var(--font-blackletter);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--oxblood);
+  }
+
+  p {
+    margin: 0;
+    max-width: 36ch;
+  }
+}
+
+/* ─────────────── Botones ─────────────── */
 
 .link-button {
   background: none;
@@ -82,18 +363,134 @@ select {
   color: var(--ash);
   cursor: pointer;
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 0.25em;
+  transition: color 0.15s var(--ease);
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: var(--parchment);
+    text-decoration-color: var(--gold);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-/* Texto largo de la wiki */
+.button {
+  --btn-bg: linear-gradient(180deg, var(--blood), var(--oxblood));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.6rem 1.35rem;
+  background: var(--btn-bg);
+  color: var(--parchment);
+  border: 1px solid #c03440;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.12) inset,
+    0 6px 20px -6px var(--blood-glow);
+  transition:
+    transform 0.15s var(--ease),
+    box-shadow 0.2s var(--ease),
+    filter 0.2s var(--ease);
+
+  &:hover:not(:disabled) {
+    color: var(--parchment);
+    filter: brightness(1.12);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.15) inset,
+      0 10px 28px -6px rgb(214 50 66 / 0.55);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: saturate(0.6);
+  }
+}
+
+.button.secondary {
+  --btn-bg: rgb(0 0 0 / 0.2);
+  border-color: var(--rule-gold);
+  color: var(--parchment);
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    --btn-bg: rgb(201 164 92 / 0.08);
+    border-color: var(--gold);
+    box-shadow: none;
+    filter: none;
+  }
+}
+
+.button.ghost {
+  --btn-bg: transparent;
+  border-color: transparent;
+  color: var(--parchment-dim);
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    --btn-bg: var(--vellum-2);
+    color: var(--parchment);
+    box-shadow: none;
+    filter: none;
+  }
+}
+
+.button.large {
+  min-height: 3.25rem;
+  padding-inline: 1.9rem;
+  font-size: 1rem;
+}
+
+.button.block {
+  width: 100%;
+}
+
+/* ─────────────── Texto largo ─────────────── */
+
 .prose {
   display: block;
   max-width: 68ch;
-  line-height: 1.7;
+  line-height: 1.75;
+  color: var(--parchment);
+
+  > app-md-blocks > p:first-of-type::first-letter,
+  > p:first-of-type::first-letter {
+    float: left;
+    margin: 0.08em 0.12em 0 0;
+    font-family: var(--font-blackletter);
+    font-size: 3.6em;
+    line-height: 0.85;
+    color: var(--blood-bright);
+    text-shadow: 0 0 24px var(--blood-glow);
+  }
+
+  h2,
+  h3 {
+    color: var(--parchment);
+  }
+
+  h2 {
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
 
   p,
   ul,
@@ -105,24 +502,57 @@ select {
     margin: 0 0 0.25em;
   }
 
+  li::marker {
+    color: var(--gold);
+  }
+
+  strong {
+    color: #fff4e4;
+  }
+
   blockquote {
-    margin: 1.5em 0;
-    padding-left: 1.25rem;
-    border-left: 3px solid var(--oxblood);
+    margin: 1.75em 0;
+    padding: 0.75rem 1.25rem;
+    border-left: 2px solid var(--blood);
+    background: linear-gradient(90deg, rgb(140 28 36 / 0.12), transparent);
+    font-family: var(--font-display);
+    font-size: 1.25em;
     font-style: italic;
-    color: var(--ash);
+    color: var(--parchment-dim);
   }
 
   code {
     font-size: 0.9em;
-    background: var(--vellum);
-    padding: 0.1em 0.3em;
+    background: var(--vellum-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.05em 0.35em;
   }
 
   hr {
     border: 0;
-    border-top: 1px solid var(--rule);
-    margin: 2em 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rule-gold), transparent);
+    margin: 2.5em 0;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0 0 1.25em;
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+  }
+
+  th {
+    color: var(--gold);
+    font-weight: 600;
   }
 }
 
@@ -134,13 +564,15 @@ select {
   border: 0;
   padding: 0;
   cursor: help;
-  text-decoration: underline dotted var(--gold);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.25em;
+  text-decoration: underline dotted rgb(201 164 92 / 0.6);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.3em;
+  transition: color 0.15s var(--ease);
 
   &:hover,
   &[aria-describedby] {
-    color: var(--gold);
+    color: var(--gold-bright);
+    text-decoration-color: var(--gold);
   }
 }
 
@@ -148,14 +580,15 @@ select {
 .trait-tooltip {
   position: fixed;
   z-index: 100;
-  width: min(22rem, calc(100vw - 1rem));
-  padding: 0.875rem 1rem 0.75rem;
-  background: var(--vellum);
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--gold);
-  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.5);
+  width: min(23rem, calc(100vw - 1rem));
+  padding: 1rem 1.15rem 0.85rem;
+  background: linear-gradient(180deg, var(--vellum-3), var(--vellum));
+  border: 1px solid var(--rule-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
   font-size: 0.9375rem;
-  line-height: 1.5;
+  line-height: 1.55;
+  animation: rise 0.18s var(--ease);
 
   p {
     margin: 0 0 0.5rem;
@@ -163,90 +596,157 @@ select {
 }
 
 .trait-tooltip__name {
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.0625rem;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--gold-bright);
 }
 
 .trait-tooltip__levels {
   margin: 0.5rem 0 0;
   padding-left: 1.4rem;
-  color: var(--ash);
+  color: var(--parchment-dim);
 
   li::marker {
-    color: var(--gold);
+    color: var(--blood-bright);
   }
 }
 
-/* Formularios */
+/* ─────────────── Formularios ─────────────── */
+
 .field {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.4rem;
   margin-bottom: 1.25rem;
 
-  label {
+  > label,
+  > legend {
+    font-size: 0.8125rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
   }
 
-  input {
+  select {
     width: 100%;
-    padding: 0.6rem 0.75rem;
-    background: var(--vellum);
-    border: 1px solid var(--rule);
-    border-bottom: 2px solid var(--ash);
-
-    &:focus-visible {
-      outline-offset: 0;
-      border-bottom-color: var(--gold);
-    }
-
-    &[aria-invalid='true'] {
-      border-bottom-color: #e0626a;
-    }
   }
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+input[type='number'],
+input:not([type]),
+textarea,
+select {
+  width: auto;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  background: rgb(0 0 0 / 0.35);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--parchment);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4) inset;
+  transition:
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
+    background-color 0.15s var(--ease);
+
+  &::placeholder {
+    color: rgb(157 143 131 / 0.7);
+    font-style: italic;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #5a4440;
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    border-color: var(--gold);
+    background: rgb(0 0 0 / 0.5);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.4) inset,
+      0 0 0 3px rgb(201 164 92 / 0.18);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--blood-bright);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.field input {
+  width: 100%;
+}
+
+select {
+  appearance: none;
+  padding-right: 2.25rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23c9a45c' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+
+  option {
+    background: var(--vellum);
+    color: var(--parchment);
+  }
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--blood);
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+fieldset {
+  min-width: 0;
 }
 
 .field__hint {
   color: var(--ash);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 }
 
 .field__error {
-  color: #f08a90;
-  font-size: 0.9375rem;
+  color: var(--danger);
+  font-size: 0.875rem;
 }
 
-.button {
-  display: inline-block;
-  padding: 0.65rem 1.4rem;
-  background: var(--oxblood);
-  color: var(--parchment);
-  border: 1px solid #b0303a;
-  cursor: pointer;
-  font-weight: 600;
+/* ─────────────── Avisos ─────────────── */
 
-  &:hover {
-    background: #a3222c;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: progress;
-  }
-}
-
-.button.secondary {
-  background: transparent;
-  border-color: var(--ash);
-
-  &:hover {
-    background: var(--vellum);
-  }
-}
-
-.notice {
+.notice,
+.alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 1.25rem;
   padding: 0.75rem 1rem;
-  border-left: 3px solid var(--gold);
-  background: var(--vellum);
+  border: 1px solid var(--rule-gold);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgb(201 164 92 / 0.1), rgb(201 164 92 / 0.02));
+  font-size: 0.9375rem;
+  animation: rise 0.25s var(--ease);
+}
+
+.alert {
+  border-color: rgb(214 50 66 / 0.55);
+  background: linear-gradient(90deg, rgb(140 28 36 / 0.3), rgb(140 28 36 / 0.08));
+}
+
+.muted {
+  color: var(--ash);
 }
 
 .visually-hidden {
@@ -258,24 +758,43 @@ select {
   white-space: nowrap;
 }
 
-select {
-  padding: 0.4rem 0.6rem;
-  background: var(--vellum);
-  border: 1px solid var(--rule);
+/* Esqueleto de carga */
+.skeleton {
+  display: block;
+  height: 1rem;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--vellum) 0%, var(--vellum-3) 50%, var(--vellum) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
 }
 
-.alert {
-  padding: 0.75rem 1rem;
-  border-left: 3px solid #e0626a;
-  background: rgb(140 28 36 / 0.25);
-  margin-bottom: 1.25rem;
+/* Entrada suave de cada página */
+.page-enter {
+  animation: rise 0.45s var(--ease) both;
 }
 
-.muted {
-  color: var(--ash);
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

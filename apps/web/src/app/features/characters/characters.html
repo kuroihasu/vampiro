@@ -1,7 +1,11 @@
+<header class="page-head">
+  <p class="eyebrow">Tu progenie</p>
+  <h1 id="mine-title">Personajes</h1>
+  <p>Tus fichas, agrupadas por edición. Ábrelas para seguir con el editor guiado.</p>
+</header>
+
 <div class="characters">
   <section class="mine" aria-labelledby="mine-title">
-    <h1 id="mine-title">Personajes</h1>
-
     @if (error(); as message) {
       <p class="alert" role="alert">{{ message }}</p>
     }
@@ -9,75 +13,102 @@
     @if (list.error()) {
       <p class="alert" role="alert">No se pudieron cargar tus fichas. Recarga la página.</p>
     } @else if (list.isLoading() && !list.hasValue()) {
-      <p class="muted">Cargando tus fichas…</p>
+      <ul class="grid" aria-label="Cargando tus fichas…">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <li class="sheet sheet--loading"><span class="skeleton"></span></li>
+        }
+      </ul>
     } @else {
       @for (g of groups(); track g.edition.id) {
-        <h2>{{ g.edition.name }}</h2>
-        <ul class="list">
+        <h2 class="group-title">
+          <span class="badge badge--gold">{{ short[g.edition.id] }}</span>
+          {{ g.edition.name }}
+          <span class="group-count">{{ g.characters.length }}</span>
+        </h2>
+        <ul class="grid">
           @for (c of g.characters; track c.id) {
-            <li>
-              <div class="info">
-                <a [routerLink]="['/personajes', c.id]">{{ c.name }}</a>
-                <span class="muted">
-                  {{ c.concept || 'Sin concepto' }}
-                  @if (c.status === 'draft') {
-                    <em>(borrador)</em>
-                  }
-                </span>
-              </div>
-              @if (confirming() === c.id) {
-                <span class="confirm" role="group" [attr.aria-label]="'Borrar ' + c.name">
-                  ¿Borrar para siempre?
-                  <button type="button" class="link-button danger" (click)="remove(c.id)">
+            <li class="sheet" [class.confirming]="confirming() === c.id">
+              <a class="sheet__link" [routerLink]="['/personajes', c.id]">
+                <span class="sheet__monogram" aria-hidden="true">{{ c.name.charAt(0) }}</span>
+                <span class="sheet__name">{{ c.name }}</span>
+                <span class="sheet__concept">{{ c.concept || 'Sin concepto' }}</span>
+              </a>
+              <div class="sheet__foot">
+                @if (c.status === 'draft') {
+                  <span class="badge badge--dim">Borrador</span>
+                } @else {
+                  <span class="badge badge--ok">Completa</span>
+                }
+                @if (confirming() === c.id) {
+                  <span class="confirm" role="group" [attr.aria-label]="'Borrar ' + c.name">
+                    ¿Borrar para siempre?
+                    <button type="button" class="link-button danger" (click)="remove(c.id)">
+                      Borrar
+                    </button>
+                    <button type="button" class="link-button" (click)="confirming.set(undefined)">
+                      Cancelar
+                    </button>
+                  </span>
+                } @else {
+                  <button
+                    type="button"
+                    class="link-button"
+                    [attr.aria-label]="'Borrar ' + c.name"
+                    (click)="confirming.set(c.id)"
+                  >
                     Borrar
                   </button>
-                  <button type="button" class="link-button" (click)="confirming.set(undefined)">
-                    Cancelar
-                  </button>
-                </span>
-              } @else {
-                <button
-                  type="button"
-                  class="link-button"
-                  [attr.aria-label]="'Borrar ' + c.name"
-                  (click)="confirming.set(c.id)"
-                >
-                  Borrar
-                </button>
-              }
+                }
+              </div>
             </li>
           }
         </ul>
       } @empty {
-        <p class="muted">Todavía no tienes fichas. Empieza la primera con el formulario.</p>
+        <div class="empty-state">
+          <span class="empty-state__sigil" aria-hidden="true">P</span>
+          <p>Todavía no tienes fichas. Dale un nombre a tu primer vástago y elige su edición.</p>
+          <button type="button" class="button secondary" (click)="focusName()">
+            Crear mi primera ficha
+          </button>
+        </div>
       }
     }
   </section>
 
-  <section class="new" aria-labelledby="new-title">
+  <section class="new box" aria-labelledby="new-title">
     <h2 id="new-title">Nueva ficha</h2>
+    <p class="muted new__lead">Empieza con un nombre; el resto lo completas paso a paso.</p>
     <form novalidate (submit)="onCreate($event)">
       <div class="field">
         <label for="new-name">Nombre del personaje</label>
         <input
+          #nameInput
           id="new-name"
           type="text"
+          placeholder="Por ejemplo, Lucien Varga"
           [formField]="createForm.name"
           aria-describedby="new-name-error"
         />
         <app-field-errors id="new-name-error" [field]="createForm.name()" />
       </div>
-      <div class="field">
-        <label for="new-edition">Edición</label>
-        <select id="new-edition" [formField]="createForm.edition">
-          @for (e of availableEditions; track e.id) {
-            <option [value]="e.id">{{ e.name }}</option>
-          }
-        </select>
-        <span class="field__hint">El resto de ediciones llegarán más adelante.</span>
-      </div>
-      <button type="submit" class="button" [disabled]="createForm().submitting()">
-        Crear ficha
+      <fieldset class="field editions">
+        <legend>Edición</legend>
+        @for (e of availableEditions; track e.id) {
+          <label class="edition" [class.selected]="model().edition === e.id">
+            <input
+              type="radio"
+              name="new-edition"
+              [value]="e.id"
+              [checked]="model().edition === e.id"
+              (change)="setEdition(e.id)"
+            />
+            <span class="edition__short">{{ short[e.id] }}</span>
+            <span class="edition__name">{{ e.name }}</span>
+          </label>
+        }
+      </fieldset>
+      <button type="submit" class="button block" [disabled]="createForm().submitting()">
+        {{ createForm().submitting() ? 'Creando…' : 'Crear ficha' }}
       </button>
     </form>
   </section>

@@ -1,5 +1,6 @@
 <div class="wiki">
   <aside class="index">
+    <p class="eyebrow">Grimorio</p>
     <h1>Wiki</h1>
     <p class="muted intro">
       Clanes, disciplinas, rasgos y reglas, explicados con palabras propias.
@@ -8,7 +9,12 @@
     <form role="search" class="search" (submit)="search($event)">
       <label for="wiki-q">Buscar en la wiki</label>
       <div class="search__row">
-        <input id="wiki-q" type="search" [formField]="searchForm.q" />
+        <input
+          id="wiki-q"
+          type="search"
+          placeholder="Brujah, Celeridad, Frenesí…"
+          [formField]="searchForm.q"
+        />
         <button type="submit" class="button">Buscar</button>
       </div>
     </form>
@@ -53,23 +59,37 @@
     @if (errorText(); as message) {
       <p class="alert" role="alert">{{ message }}</p>
     } @else if (articles.isLoading() && !articles.hasValue()) {
-      <p class="muted">Cargando artículos…</p>
+      <ul class="articles" aria-label="Cargando artículos…">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <li>
+            <span class="article-card skeleton-card"><span class="skeleton"></span></span>
+          </li>
+        }
+      </ul>
     } @else if (articles.hasValue()) {
       @if (articles.value().length === 0) {
-        <p class="muted">
-          No hay artículos que coincidan.
+        <div class="empty-state">
+          <span class="empty-state__sigil" aria-hidden="true">W</span>
+          <p>No hay artículos que coincidan.</p>
           @if (q()) {
             <a routerLink="/wiki" [queryParams]="{ categoria: category()?.id ?? null }"
               >Quitar la búsqueda</a
-            >.
+            >
           }
-        </p>
+        </div>
       } @else {
         <ul class="articles">
           @for (a of articles.value(); track a.slug) {
             <li>
-              <a [routerLink]="['/wiki', a.slug]">{{ a.title }}</a>
-              <span class="muted">{{ a.editions.join(', ').toUpperCase() }}</span>
+              <a class="article-card" [routerLink]="['/wiki', a.slug]">
+                <span class="article-card__cat">{{ categoryLabel(a.category) }}</span>
+                <span class="article-card__title">{{ a.title }}</span>
+                <span class="article-card__eds">
+                  @for (e of a.editions; track e) {
+                    <span class="badge">{{ editionShort(e) }}</span>
+                  }
+                </span>
+              </a>
             </li>
           }
         </ul>

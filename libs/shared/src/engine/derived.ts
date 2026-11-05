@@ -13,6 +13,8 @@ export interface DerivedStats {
   health?: number;
   bloodPotency?: number;
   hungerMax?: number;
+  /** Nombre de la moral si no es la Humanidad (p. ej. "Camino de los Reyes"). */
+  moralityName?: string;
 }
 
 /**
@@ -31,10 +33,15 @@ export function deriveStats(sheet: CharacterSheet, ruleset: Ruleset): DerivedSta
   );
   const blood = rules.bloodPool?.[generation] ?? { max: 0, perTurn: 0 };
 
+  // Edad Oscura: la moral suma las dos virtudes del Camino elegido.
+  const road = ruleset.roads?.options.find((r) => r.key === sheet.road);
+  const moralityFrom = ruleset.roads ? (road?.virtues ?? []) : rules.humanity.from;
+
   return {
+    ...(road ? { moralityName: road.name } : {}),
     humanity:
       (rules.humanity.base ?? 0) +
-      sum(rules.humanity.from) +
+      sum(moralityFrom) +
       traitTotal(sheet, ruleset, rules.humanity.traitKey),
     willpower: sum(rules.willpower.from) + traitTotal(sheet, ruleset, rules.willpower.traitKey),
     generation,

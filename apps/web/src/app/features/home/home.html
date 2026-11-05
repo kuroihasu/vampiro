@@ -1,0 +1,79 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__glow" aria-hidden="true"></div>
+  <p class="eyebrow">Herramientas para narradores y jugadores</p>
+  <h1 id="hero-title">
+    <span class="hero__brand">Vampiro</span>
+    <span class="hero__sub">la Mascarada</span>
+  </h1>
+  <p class="hero__lead">
+    Un grimorio para tus crónicas: consulta las reglas, forja fichas que respetan cada edición y
+    reúne a tu coterie para tirar los dados en directo.
+  </p>
+  <div class="hero__actions">
+    @if (session.user()) {
+      <a class="button large" routerLink="/personajes">Mis personajes</a>
+      <a class="button secondary large" routerLink="/salas">Mis salas</a>
+    } @else {
+      <a class="button large" routerLink="/registro">Empezar mi crónica</a>
+      <a class="button secondary large" routerLink="/wiki">Explorar la wiki</a>
+    }
+  </div>
+  <p class="hero__quote">«La noche es nuestra, y la sangre, la vida.»</p>
+</section>
+
+@if (session.user() && (recentCharacters().length || recentRooms().length)) {
+  <section class="recent" aria-labelledby="recent-title">
+    <h2 id="recent-title" class="section-title">Donde lo dejaste</h2>
+    <div class="recent__grid">
+      @for (c of recentCharacters(); track c.id) {
+        <a class="card recent__item" [routerLink]="['/personajes', c.id]">
+          <span class="badge badge--gold">{{ short[c.edition] }}</span>
+          <strong>{{ c.name }}</strong>
+          <span class="muted">{{ c.concept || 'Sin concepto' }}</span>
+          <span class="recent__kind">Ficha{{ c.status === 'draft' ? ' · borrador' : '' }}</span>
+        </a>
+      }
+      @for (r of recentRooms(); track r.id) {
+        <a class="card recent__item" [routerLink]="['/salas', r.id]">
+          <span class="badge badge--blood">{{ short[r.edition] }}</span>
+          <strong>{{ r.name }}</strong>
+          <span class="muted">{{ r.myRole === 'master' ? 'Eres el master' : 'Juegas' }}</span>
+          <span class="recent__kind"
+            >Sala · {{ r.memberCount }} {{ r.memberCount === 1 ? 'persona' : 'personas' }}</span
+          >
+        </a>
+      }
+    </div>
+  </section>
+}
+
+<section class="features" aria-label="Qué puedes hacer">
+  @for (f of features; track f.link) {
+    <a class="feature" [routerLink]="f.link">
+      <span class="feature__numeral" aria-hidden="true">{{ f.numeral }}</span>
+      <h2>{{ f.title }}</h2>
+      <p>{{ f.text }}</p>
+      <span class="feature__cta">{{ f.cta }} <span aria-hidden="true">→</span></span>
+    </a>
+  }
+</section>
+
+<div class="ornament" aria-hidden="true"><span></span></div>
+
+<section class="editions" aria-labelledby="editions-title">
+  <h2 id="editions-title" class="section-title">Ediciones</h2>
+  <ul>
+    @for (e of editions; track e.id) {
+      <li [class.soon]="!e.available">
+        <span class="editions__short">{{ short[e.id] }}</span>
+        <span class="editions__name">{{ e.name }}</span>
+        <span class="editions__tag muted">{{ tagline[e.id] }}</span>
+        @if (e.available) {
+          <span class="badge badge--ok">Disponible</span>
+        } @else {
+          <span class="badge badge--dim">Próximamente</span>
+        }
+      </li>
+    }
+  </ul>
+</section>
