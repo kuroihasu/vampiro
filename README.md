@@ -23,17 +23,18 @@ ejecutar y tiene la última palabra.
 
 ### apps/api
 
-| Carpeta                  | Contenido                                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `prisma/`                | Esquema, migraciones y seed de la wiki                                                                                          |
-| `src/config`             | Variables de entorno validadas al arrancar (`@nestjs/config`)                                                                   |
-| `src/common`             | Filtro global de errores, `ApiException`, decoradores `@Public` y `@CurrentUser`                                                |
-| `src/modules/auth`       | `POST /auth/register`, `/login`, `/refresh`, `/logout`                                                                          |
-| `src/modules/users`      | `GET` y `PATCH /users/me`                                                                                                       |
-| `src/modules/wiki`       | `GET /wiki/categories`, `/wiki/articles?categoria=&edicion=&q=`, `/wiki/articles/:slug`                                         |
-| `src/modules/characters` | `GET /characters?edicion=`, `POST /characters`, `GET/PUT/DELETE /characters/:id`, `POST /characters/:id/evaluate` y `/complete` |
-| `src/modules/rules`      | `GET /editions`, `GET /rulesets/:edicion`, `GET /traits/:ed/:k`                                                                 |
-| `src/modules/health`     | `GET /health`                                                                                                                   |
+| Carpeta                  | Contenido                                                                                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `prisma/`                | Esquema, migraciones y seed de la wiki                                                                                                                                                                                         |
+| `src/config`             | Variables de entorno validadas al arrancar (`@nestjs/config`)                                                                                                                                                                  |
+| `src/common`             | Filtro global de errores, `ApiException`, decoradores `@Public` y `@CurrentUser`                                                                                                                                               |
+| `src/modules/auth`       | `POST /auth/register`, `/login`, `/refresh`, `/logout`                                                                                                                                                                         |
+| `src/modules/users`      | `GET` y `PATCH /users/me`                                                                                                                                                                                                      |
+| `src/modules/wiki`       | `GET /wiki/categories`, `/wiki/articles?categoria=&edicion=&q=`, `/wiki/articles/:slug`                                                                                                                                        |
+| `src/modules/characters` | `GET /characters?edicion=`, `POST /characters`, `GET/PUT/DELETE /characters/:id`, `POST /characters/:id/evaluate` y `/complete`                                                                                                |
+| `src/modules/rooms`      | `POST/GET /rooms`, `GET /rooms/:id`, `PATCH /rooms/:id/config`, `POST /rooms/:id/invite-code`, `GET /rooms/invite/:codigo`, `POST /rooms/join`, `DELETE /rooms/:id/members/:userId`, `POST/PATCH/DELETE /rooms/:id/characters` |
+| `src/modules/rules`      | `GET /editions`, `GET /rulesets/:edicion`, `GET /traits/:ed/:k`                                                                                                                                                                |
+| `src/modules/health`     | `GET /health`                                                                                                                                                                                                                  |
 
 Todas las rutas exigen sesión salvo las marcadas con `@Public()` (auth, wiki, rules y health).
 
@@ -47,7 +48,13 @@ se revocan todas las sesiones de ese usuario. Login y registro tienen límite de
 `updatedAt` que se editó: si otra pestaña guardó antes, responde 409 `CONFLICTO_VERSION`.
 La ficha de otro usuario responde 404, igual que una inexistente.
 
-Próximos módulos: `rooms`, `dice`, `realtime`.
+**Salas:** quien crea la sala es su master. Los demás entran con el código o el enlace
+`/salas/unirse/:codigo` (la vista previa es pública; el código puede caducar). A quien no es
+miembro se le responde 404, y lo reservado al master responde 403. Cada ficha vinculada se
+evalúa en modo completo con la configuración de la sala (con las reglas de NPC si lo es); se
+recalcula al vincularla, al guardar la ficha y al cambiar la configuración.
+
+Próximos módulos: `dice`, `realtime`.
 
 ### apps/web
 
@@ -112,7 +119,7 @@ pnpm test             # tests unitarios de los tres paquetes
 pnpm test:e2e         # e2e de la API contra la base vampiro_test (necesita pnpm db:up)
 pnpm db:up            # arranca PostgreSQL
 pnpm db:down          # lo para (los datos se conservan en un volumen de Docker)
-pnpm db:migrate       # crea/aplica migraciones y regenera el cliente de Prisma
+pnpm db:migrate       # regenera el cliente de Prisma y aplica/crea migraciones (--name nueva)
 pnpm db:seed          # vuelve a cargar los artículos de ejemplo (idempotente)
 ```
 
@@ -123,6 +130,7 @@ pruebas; nunca tocan la base de desarrollo.
 
 - Fase 1: base, cuentas de usuario y wiki de solo lectura con tooltips.
 - Fase 2: fichas de personaje V20 con editor por pasos y validación en cliente y servidor.
+- Fase 3: salas con invitación, configuración del master y validez de las fichas en la sala.
 
 Solo el ruleset de V20 está cargado y es parcial; sus números deben revisarse contra el manual.
 Los textos de rasgos y de la wiki son resúmenes propios.

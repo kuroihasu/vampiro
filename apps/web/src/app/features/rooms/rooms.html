@@ -1,0 +1,83 @@
+<div class="rooms">
+  <section aria-labelledby="rooms-title">
+    <h1 id="rooms-title">Salas</h1>
+    <p class="muted lead">
+      Una sala reúne al master y a sus jugadores, con sus fichas y sus tiradas.
+    </p>
+
+    @if (error(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+
+    @if (list.error()) {
+      <p class="alert" role="alert">No se pudieron cargar tus salas. Recarga la página.</p>
+    } @else if (list.hasValue()) {
+      <ul class="list">
+        @for (r of list.value(); track r.id) {
+          <li>
+            <a [routerLink]="['/salas', r.id]">{{ r.name }}</a>
+            <span class="muted">
+              {{ r.myRole === 'master' ? 'Eres el master' : 'Juegas' }} en
+              {{ editionName(r.edition) }}. {{ r.memberCount }}
+              {{ r.memberCount === 1 ? 'persona' : 'personas' }}.
+            </span>
+          </li>
+        } @empty {
+          <li class="empty muted">Aún no estás en ninguna sala. Crea una o únete con un código.</li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">Cargando tus salas…</p>
+    }
+  </section>
+
+  <div class="side">
+    <section class="box" aria-labelledby="join-title">
+      <h2 id="join-title">Unirme con un código</h2>
+      <form novalidate (submit)="onJoin($event)">
+        <div class="field">
+          <label for="join-code">Código de invitación</label>
+          <input
+            id="join-code"
+            type="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            class="code"
+            [formField]="joinForm.code"
+            aria-describedby="join-code-error"
+          />
+          <app-field-errors id="join-code-error" [field]="joinForm.code()" />
+        </div>
+        <button type="submit" class="button" [disabled]="joinForm().submitting()">Unirme</button>
+      </form>
+    </section>
+
+    <section class="box" aria-labelledby="create-title">
+      <h2 id="create-title">Crear una sala</h2>
+      <form novalidate (submit)="onCreate($event)">
+        <div class="field">
+          <label for="room-name">Nombre</label>
+          <input
+            id="room-name"
+            type="text"
+            [formField]="createForm.name"
+            aria-describedby="room-name-error"
+          />
+          <app-field-errors id="room-name-error" [field]="createForm.name()" />
+        </div>
+        <div class="field">
+          <label for="room-edition">Edición</label>
+          <select id="room-edition" [formField]="createForm.edition">
+            @for (e of editions; track e.id) {
+              <option [value]="e.id">{{ e.name }}</option>
+            }
+          </select>
+        </div>
+        <button type="submit" class="button" [disabled]="createForm().submitting()">
+          Crear sala
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

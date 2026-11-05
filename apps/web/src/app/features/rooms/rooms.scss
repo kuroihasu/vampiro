@@ -1,0 +1,66 @@
+.rooms {
+  display: grid;
+  grid-template-columns: minmax(0, 40rem) minmax(16rem, 22rem);
+  gap: 2rem clamp(2rem, 5vw, 5rem);
+  align-items: start;
+
+  @media (max-width: 56rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lead {
+  margin: 0 0 1.5rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: grid;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  a {
+    font-size: 1.1875rem;
+    color: var(--parchment);
+    text-decoration-color: var(--rule);
+
+    &:hover {
+      text-decoration-color: var(--gold);
+    }
+  }
+
+  .muted {
+    font-size: 0.9375rem;
+  }
+}
+
+.side {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.box {
+  padding: 1.25rem 1.5rem;
+  background: var(--vellum);
+  border-top: 3px solid var(--oxblood);
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+  }
+
+  select {
+    width: 100%;
+  }
+}
+
+.code {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}

@@ -45,5 +45,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/rooms/rooms').then((m) => m.Rooms),
   },
+  {
+    path: 'salas/unirse/:codigo',
+    title: 'Invitación · Vampiro',
+    loadComponent: () => import('./features/rooms/join-room').then((m) => m.JoinRoom),
+  },
+  {
+    path: 'salas/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/rooms/room').then((m) => m.Room),
+  },
   { path: '**', redirectTo: '' },
 ];

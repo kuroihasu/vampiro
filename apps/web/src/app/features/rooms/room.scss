@@ -1,0 +1,191 @@
+.back {
+  margin: 0 0 1.5rem;
+
+  a {
+    color: var(--ash);
+  }
+}
+
+.head {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.room {
+  display: grid;
+  grid-template-columns: minmax(0, 44rem) minmax(16rem, 22rem);
+  gap: 2rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
+
+  @media (max-width: 60rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main h2 {
+  margin-top: 0;
+}
+
+.characters {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+
+  > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.25rem 1.25rem;
+    padding: 0.75rem 0 0.75rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    border-left: 3px solid transparent;
+
+    &.npc {
+      border-left-color: var(--ash);
+    }
+
+    @media (max-width: 36rem) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .empty {
+    display: block;
+    padding-left: 0;
+  }
+}
+
+.who {
+  display: grid;
+
+  .name {
+    font-size: 1.125rem;
+  }
+
+  .muted {
+    font-size: 0.9375rem;
+  }
+}
+
+.ok {
+  color: var(--ash);
+  font-size: 0.9375rem;
+}
+
+.warn {
+  color: #f08a90;
+}
+
+.row-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.violations {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.9375rem;
+  color: #f08a90;
+}
+
+.link {
+  h3 {
+    font-size: 1.0625rem;
+    margin: 0 0 0.5rem;
+  }
+}
+
+.link__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+
+  select {
+    flex: 1;
+    min-width: 12rem;
+  }
+}
+
+.inline {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+
+  input {
+    accent-color: var(--oxblood);
+  }
+}
+
+.master {
+  margin-top: 3rem;
+}
+
+.side {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.box {
+  padding: 1.25rem 1.5rem;
+  background: var(--vellum);
+  border-top: 3px solid var(--oxblood);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+  }
+}
+
+/* El código de invitación es lo que se dicta: grande y espaciado. */
+.code {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+.link-text {
+  word-break: break-all;
+  color: var(--ash);
+}
+
+.regen {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  justify-items: start;
+}
+
+.members {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  em {
+    margin-left: 0.35rem;
+    font-size: 0.875rem;
+  }
+}
